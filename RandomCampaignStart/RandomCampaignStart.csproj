@@ -43,6 +43,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Cheats.cs" />
+    <Compile Include="ModSettings.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="RNGStart.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -53,6 +55,7 @@
     </AdditionalFiles>
   </ItemGroup>
   <ItemGroup>
+    <None Include="cheatsettings.json" />
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

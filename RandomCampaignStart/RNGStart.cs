@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Reflection;
 using BattleTech;
@@ -41,7 +42,7 @@ namespace RandomCampaignStart
                 return subList;
 
             var randomizeMe = new List<T>(list);
-
+            
             // add enough duplicates of the list to satisfy the number specified
             while (randomizeMe.Count < number)
                 randomizeMe.AddRange(list);
@@ -52,7 +53,7 @@ namespace RandomCampaignStart
 
             return subList;
         }
-
+        
         public static void Postfix(SimGameState __instance)
         {
             if (RngStart.Settings.NumberRandomRonin + RngStart.Settings.NumberProceduralPilots + RngStart.Settings.NumberRoninFromList > 0)
@@ -62,7 +63,7 @@ namespace RandomCampaignStart
                     __instance.PilotRoster.RemoveAt(0);
                 }
                 List<PilotDef> list = new List<PilotDef>();
-
+                
                 if (RngStart.Settings.StartingRonin != null)
                 {
                     var RoninRandomizer = new List<string>();
@@ -1439,7 +1440,8 @@ namespace RandomCampaignStart
                     }
                     if (RngStart.Settings.MaximumMechWeight != 100)
                     {
-
+                        //AccessTools.Method(typeof(SimGameState), "SetReputation").Invoke(__instance, new object[] { Values to give });
+                        
                         if (kvp.Value.Tonnage > RngStart.Settings.MaximumMechWeight || kvp.Value.Tonnage < RngStart.Settings.MinimumMechWeight)
                         {
                             continue;
@@ -1507,6 +1509,8 @@ namespace RandomCampaignStart
                 bool bBlacklisted = false;
                 while (minLanceSize > lance.Count || currentLanceWeight < RngStart.Settings.MinimumStartingWeight)
                 {
+                    Logger.Debug($"Begin Mech Finder Loop");
+                    
                     // build lance collection from dictionary for speed
                     var randomMech = mechTonnages.ElementAt(rng.Next(0, mechTonnages.Count));
                     var mechString = randomMech.Key.Replace("chassisdef", "mechdef");
@@ -1547,1229 +1551,54 @@ namespace RandomCampaignStart
                     if (!bBlacklisted && !bDupe && !bExcluded)
                     {
                         Logger.Debug($"Starting Planet: {__instance.Constants.Story.StartingTargetSystem}");
-                        if (__instance.Constants.Story.StartingTargetSystem == "StranaMechty")
+
+                        for(int iStart = 0; iStart < RngStart.Settings.startSystemList.Count; iStart++)
                         {
-                            //Check for clan tags
-                            for (int iTag = 0; iTag < mechDef.MechTags.Count; iTag++)
+                            if(__instance.Constants.Story.StartingTargetSystem == RngStart.Settings.startSystemList[iStart])
                             {
-                                foreach (var mechTag in RngStart.Settings.clanAllowedTags)
+                                for (int iTag = 0; iTag < mechDef.MechTags.Count; iTag++)
                                 {
-                                    if (mechTag == mechDef.MechTags[iTag])
+                                    foreach (var mechTag in RngStart.Settings.AllowedTags[iStart])
                                     {
-                                        Logger.Debug($"INCLUDED!");
-                                        Logger.Debug($"Included Tag: {mechDef.MechTags[iTag]}");
-                                        Logger.Debug($"Included Mech:{mechDef.Description.Id}");
-                                        bNoTag = false;
-                                        goto endTagCheck;
+                                        if (mechTag == mechDef.MechTags[iTag])
+                                        {
+                                            Logger.Debug($"INCLUDED!");
+                                            Logger.Debug($"Included Tag: {mechDef.MechTags[iTag]}");
+                                            Logger.Debug($"Included Mech:{mechDef.Description.Id}");
+                                            bNoTag = false;
+                                            goto endTagCheck;
+                                        }
+                                        else
+                                        {
+                                            bNoTag = true;
+                                        }
                                     }
-                                    else
-                                    {
-                                        bNoTag = true;
-                                    }
+                                    Logger.Debug($" ");
+                                    Logger.Debug($"{RngStart.Settings.startSystemList[iStart]} Start!");
+                                    Logger.Debug($"Invalid Tag!");
+                                    Logger.Debug($"Mech Tag: {mechDef.MechTags[iTag]}");
+                                    Logger.Debug($" ");
                                 }
-                                Logger.Debug($" ");
-                                Logger.Debug($"Clan Start!");
-                                Logger.Debug($"Invalid Mech!");
-                                Logger.Debug($"Mech ID: {mechDef.Description.Id}");
-                                Logger.Debug($" ");
-                            }
 
-                            endTagCheck:
-                            if(!bNoTag)
-                            {
-                                Logger.Debug($"Lance Count-1: {lance.Count}");
-
-                                lance.Add(mechDef);
-                                currentLanceWeight += mechDef.Chassis.Tonnage;
-
-                                Logger.Debug($"Lance Count-2: {lance.Count}");
-                                Logger.Debug($"Adding mech {mechString} {mechDef.Chassis.Tonnage} tons");
-                            }
-                            else
-                            {
-                                bBlacklisted = false;
-                                bDupe = false;
-                                bExcluded = false;
-                                bNoTag = false;
-                            }
-                        }
-
-                        //Check for Vanilla Tags
-                        if (__instance.Constants.Story.StartingTargetSystem == "UrCruinne")
-                        {
-                            //Check for clan tags
-                            for (int iTag = 0; iTag < mechDef.MechTags.Count; iTag++)
-                            {
-                                foreach (var mechTag in RngStart.Settings.vanAllowedTags)
+                                endTagCheck:
+                                if (!bNoTag)
                                 {
-                                    if (mechTag == mechDef.MechTags[iTag])
-                                    {
-                                        Logger.Debug($"INCLUDED!");
-                                        Logger.Debug($"Included Tag: {mechDef.MechTags[iTag]}");
-                                        Logger.Debug($"Included Mech:{mechDef.Description.Id}");
-                                        bNoTag = false;
-                                        goto endTagCheck;
-                                    }
-                                    else
-                                    {
-                                        bNoTag = true;
-                                    }
+                                    Logger.Debug($"Lance Count-1: {lance.Count}");
+
+                                    lance.Add(mechDef);
+                                    currentLanceWeight += mechDef.Chassis.Tonnage;
+
+                                    Logger.Debug($"Lance Count-2: {lance.Count}");
+                                    Logger.Debug($"Adding mech {mechString} {mechDef.Chassis.Tonnage} tons");
                                 }
-                                Logger.Debug($" ");
-                                Logger.Debug($"Vanilla Start!");
-                                Logger.Debug($"Invalid Mech!");
-                                Logger.Debug($"Mech ID: {mechDef.Description.Id}");
-                                Logger.Debug($" ");
-                            }
-
-                            endTagCheck:
-                            if (!bNoTag)
-                            {
-                                Logger.Debug($"Lance Count-1: {lance.Count}");
-
-                                lance.Add(mechDef);
-                                currentLanceWeight += mechDef.Chassis.Tonnage;
-
-                                Logger.Debug($"Lance Count-2: {lance.Count}");
-                                Logger.Debug($"Adding mech {mechString} {mechDef.Chassis.Tonnage} tons");
-                            }
-                            else
-                            {
-                                bBlacklisted = false;
-                                bDupe = false;
-                                bExcluded = false;
-                                bNoTag = false;
-                            }
-                        }
-
-                        if (__instance.Constants.Story.StartingTargetSystem == "Galatea")
-                        {
-                            //Check for clan tags
-                            for (int iTag = 0; iTag < mechDef.MechTags.Count; iTag++)
-                            {
-                                foreach (var mechTag in RngStart.Settings.defAllowedTags)
+                                else
                                 {
-                                    if (mechTag == mechDef.MechTags[iTag])
-                                    {
-                                        Logger.Debug($"INCLUDED!");
-                                        Logger.Debug($"Included Tag: {mechDef.MechTags[iTag]}");
-                                        Logger.Debug($"Included Mech:{mechDef.Description.Id}");
-                                        bNoTag = false;
-                                        goto endTagCheck;
-                                    }
-                                    else
-                                    {
-                                        bNoTag = true;
-                                    }
+                                    bBlacklisted = false;
+                                    bDupe = false;
+                                    bExcluded = false;
+                                    bNoTag = false;
                                 }
-                                Logger.Debug($" ");
-                                Logger.Debug($"Default Start!");
-                                Logger.Debug($"Invalid Mech!");
-                                Logger.Debug($"Mech ID: {mechDef.Description.Id}");
-                                Logger.Debug($" ");
                             }
-
-                            endTagCheck:
-                            if (!bNoTag)
-                            {
-                                Logger.Debug($"Lance Count-1: {lance.Count}");
-
-                                lance.Add(mechDef);
-                                currentLanceWeight += mechDef.Chassis.Tonnage;
-
-                                Logger.Debug($"Lance Count-2: {lance.Count}");
-                                Logger.Debug($"Adding mech {mechString} {mechDef.Chassis.Tonnage} tons");
-                            }
-                            else
-                            {
-                                bBlacklisted = false;
-                                bDupe = false;
-                                bExcluded = false;
-                                bNoTag = false;
-                            }
-                        }
-
-                        if (__instance.Constants.Story.StartingTargetSystem == "Tharkad")
-                        {
-                            //Check for clan tags
-                            for (int iTag = 0; iTag < mechDef.MechTags.Count; iTag++)
-                            {
-                                foreach (var mechTag in RngStart.Settings.steinerAllowedTags)
-                                {
-                                    if (mechTag == mechDef.MechTags[iTag])
-                                    {
-                                        Logger.Debug($"INCLUDED!");
-                                        Logger.Debug($"Included Tag: {mechDef.MechTags[iTag]}");
-                                        Logger.Debug($"Included Mech:{mechDef.Description.Id}");
-                                        bNoTag = false;
-                                        goto endTagCheck;
-                                    }
-                                    else
-                                    {
-                                        bNoTag = true;
-                                    }
-                                }
-                                Logger.Debug($" ");
-                                Logger.Debug($"Steiner Start!");
-                                Logger.Debug($"Invalid Mech!");
-                                Logger.Debug($"Mech ID: {mechDef.Description.Id}");
-                                Logger.Debug($" ");
-                            }
-
-                            endTagCheck:
-                            if (!bNoTag)
-                            {
-                                Logger.Debug($"Lance Count-1: {lance.Count}");
-
-                                lance.Add(mechDef);
-                                currentLanceWeight += mechDef.Chassis.Tonnage;
-
-                                Logger.Debug($"Lance Count-2: {lance.Count}");
-                                Logger.Debug($"Adding mech {mechString} {mechDef.Chassis.Tonnage} tons");
-                            }
-                            else
-                            {
-                                bBlacklisted = false;
-                                bDupe = false;
-                                bExcluded = false;
-                                bNoTag = false;
-                            }
-                        }
-
-                        if (__instance.Constants.Story.StartingTargetSystem == "NewAvalon")
-                        {
-                            //Check for clan tags
-                            for (int iTag = 0; iTag < mechDef.MechTags.Count; iTag++)
-                            {
-                                foreach (var mechTag in RngStart.Settings.davionAllowedTags)
-                                {
-                                    if (mechTag == mechDef.MechTags[iTag])
-                                    {
-                                        Logger.Debug($"INCLUDED!");
-                                        Logger.Debug($"Included Tag: {mechDef.MechTags[iTag]}");
-                                        Logger.Debug($"Included Mech:{mechDef.Description.Id}");
-                                        bNoTag = false;
-                                        goto endTagCheck;
-                                    }
-                                    else
-                                    {
-                                        bNoTag = true;
-                                    }
-                                }
-                                Logger.Debug($" ");
-                                Logger.Debug($"Davion Start!");
-                                Logger.Debug($"Invalid Mech!");
-                                Logger.Debug($"Mech ID: {mechDef.Description.Id}");
-                                Logger.Debug($" ");
-                            }
-
-                            endTagCheck:
-                            if (!bNoTag)
-                            {
-                                Logger.Debug($"Lance Count-1: {lance.Count}");
-
-                                lance.Add(mechDef);
-                                currentLanceWeight += mechDef.Chassis.Tonnage;
-
-                                Logger.Debug($"Lance Count-2: {lance.Count}");
-                                Logger.Debug($"Adding mech {mechString} {mechDef.Chassis.Tonnage} tons");
-                            }
-                            else
-                            {
-                                bBlacklisted = false;
-                                bDupe = false;
-                                bExcluded = false;
-                                bNoTag = false;
-                            }
-                        }
-
-                        if (__instance.Constants.Story.StartingTargetSystem == "Luthien")
-                        {
-                            //Check for clan tags
-                            for (int iTag = 0; iTag < mechDef.MechTags.Count; iTag++)
-                            {
-                                foreach (var mechTag in RngStart.Settings.kuritaAllowedTags)
-                                {
-                                    if (mechTag == mechDef.MechTags[iTag])
-                                    {
-                                        Logger.Debug($"INCLUDED!");
-                                        Logger.Debug($"Included Tag: {mechDef.MechTags[iTag]}");
-                                        Logger.Debug($"Included Mech:{mechDef.Description.Id}");
-                                        bNoTag = false;
-                                        goto endTagCheck;
-                                    }
-                                    else
-                                    {
-                                        bNoTag = true;
-                                    }
-                                }
-                                Logger.Debug($" ");
-                                Logger.Debug($"Kurita Start!");
-                                Logger.Debug($"Invalid Mech!");
-                                Logger.Debug($"Mech ID: {mechDef.Description.Id}");
-                                Logger.Debug($" ");
-                            }
-
-                            endTagCheck:
-                            if (!bNoTag)
-                            {
-                                Logger.Debug($"Lance Count-1: {lance.Count}");
-
-                                lance.Add(mechDef);
-                                currentLanceWeight += mechDef.Chassis.Tonnage;
-
-                                Logger.Debug($"Lance Count-2: {lance.Count}");
-                                Logger.Debug($"Adding mech {mechString} {mechDef.Chassis.Tonnage} tons");
-                            }
-                            else
-                            {
-                                bBlacklisted = false;
-                                bDupe = false;
-                                bExcluded = false;
-                                bNoTag = false;
-                            }
-                        }
-
-                        if (__instance.Constants.Story.StartingTargetSystem == "Atreus(FWL)")
-                        {
-                            //Check for clan tags
-                            for (int iTag = 0; iTag < mechDef.MechTags.Count; iTag++)
-                            {
-                                foreach (var mechTag in RngStart.Settings.marikAllowedTags)
-                                {
-                                    if (mechTag == mechDef.MechTags[iTag])
-                                    {
-                                        Logger.Debug($"INCLUDED!");
-                                        Logger.Debug($"Included Tag: {mechDef.MechTags[iTag]}");
-                                        Logger.Debug($"Included Mech:{mechDef.Description.Id}");
-                                        bNoTag = false;
-                                        goto endTagCheck;
-                                    }
-                                    else
-                                    {
-                                        bNoTag = true;
-                                    }
-                                }
-                                Logger.Debug($" ");
-                                Logger.Debug($"Marik Start!");
-                                Logger.Debug($"Invalid Mech!");
-                                Logger.Debug($"Mech ID: {mechDef.Description.Id}");
-                                Logger.Debug($" ");
-                            }
-
-                            endTagCheck:
-                            if (!bNoTag)
-                            {
-                                Logger.Debug($"Lance Count-1: {lance.Count}");
-
-                                lance.Add(mechDef);
-                                currentLanceWeight += mechDef.Chassis.Tonnage;
-
-                                Logger.Debug($"Lance Count-2: {lance.Count}");
-                                Logger.Debug($"Adding mech {mechString} {mechDef.Chassis.Tonnage} tons");
-                            }
-                            else
-                            {
-                                bBlacklisted = false;
-                                bDupe = false;
-                                bExcluded = false;
-                                bNoTag = false;
-                            }
-                        }
-
-                        if (__instance.Constants.Story.StartingTargetSystem == "Sian")
-                        {
-                            //Check for clan tags
-                            for (int iTag = 0; iTag < mechDef.MechTags.Count; iTag++)
-                            {
-                                foreach (var mechTag in RngStart.Settings.liaoAllowedTags)
-                                {
-                                    if (mechTag == mechDef.MechTags[iTag])
-                                    {
-                                        Logger.Debug($"INCLUDED!");
-                                        Logger.Debug($"Included Tag: {mechDef.MechTags[iTag]}");
-                                        Logger.Debug($"Included Mech:{mechDef.Description.Id}");
-                                        bNoTag = false;
-                                        goto endTagCheck;
-                                    }
-                                    else
-                                    {
-                                        bNoTag = true;
-                                    }
-                                }
-                                Logger.Debug($" ");
-                                Logger.Debug($"Liao Start!");
-                                Logger.Debug($"Invalid Mech!");
-                                Logger.Debug($"Mech ID: {mechDef.Description.Id}");
-                                Logger.Debug($" ");
-                            }
-
-                            endTagCheck:
-                            if (!bNoTag)
-                            {
-                                Logger.Debug($"Lance Count-1: {lance.Count}");
-
-                                lance.Add(mechDef);
-                                currentLanceWeight += mechDef.Chassis.Tonnage;
-
-                                Logger.Debug($"Lance Count-2: {lance.Count}");
-                                Logger.Debug($"Adding mech {mechString} {mechDef.Chassis.Tonnage} tons");
-                            }
-                            else
-                            {
-                                bBlacklisted = false;
-                                bDupe = false;
-                                bExcluded = false;
-                                bNoTag = false;
-                            }
-                        }
-
-                        if (__instance.Constants.Story.StartingTargetSystem == "Rasalhague")
-                        {
-                            //Check for clan tags
-                            for (int iTag = 0; iTag < mechDef.MechTags.Count; iTag++)
-                            {
-                                foreach (var mechTag in RngStart.Settings.rasAllowedTags)
-                                {
-                                    if (mechTag == mechDef.MechTags[iTag])
-                                    {
-                                        Logger.Debug($"INCLUDED!");
-                                        Logger.Debug($"Included Tag: {mechDef.MechTags[iTag]}");
-                                        Logger.Debug($"Included Mech:{mechDef.Description.Id}");
-                                        bNoTag = false;
-                                        goto endTagCheck;
-                                    }
-                                    else
-                                    {
-                                        bNoTag = true;
-                                    }
-                                }
-                                Logger.Debug($" ");
-                                Logger.Debug($"Rasalhague Start!");
-                                Logger.Debug($"Invalid Mech!");
-                                Logger.Debug($"Mech ID: {mechDef.Description.Id}");
-                                Logger.Debug($" ");
-                            }
-
-                            endTagCheck:
-                            if (!bNoTag)
-                            {
-                                Logger.Debug($"Lance Count-1: {lance.Count}");
-
-                                lance.Add(mechDef);
-                                currentLanceWeight += mechDef.Chassis.Tonnage;
-
-                                Logger.Debug($"Lance Count-2: {lance.Count}");
-                                Logger.Debug($"Adding mech {mechString} {mechDef.Chassis.Tonnage} tons");
-                            }
-                            else
-                            {
-                                bBlacklisted = false;
-                                bDupe = false;
-                                bExcluded = false;
-                                bNoTag = false;
-                            }
-                        }
-
-                        if (__instance.Constants.Story.StartingTargetSystem == "St.Ives")
-                        {
-                            //Check for clan tags
-                            for (int iTag = 0; iTag < mechDef.MechTags.Count; iTag++)
-                            {
-                                foreach (var mechTag in RngStart.Settings.ivesAllowedTags)
-                                {
-                                    if (mechTag == mechDef.MechTags[iTag])
-                                    {
-                                        Logger.Debug($"INCLUDED!");
-                                        Logger.Debug($"Included Tag: {mechDef.MechTags[iTag]}");
-                                        Logger.Debug($"Included Mech:{mechDef.Description.Id}");
-                                        bNoTag = false;
-                                        goto endTagCheck;
-                                    }
-                                    else
-                                    {
-                                        bNoTag = true;
-                                    }
-                                }
-                                Logger.Debug($" ");
-                                Logger.Debug($"St. Ives Start!");
-                                Logger.Debug($"Invalid Mech!");
-                                Logger.Debug($"Mech ID: {mechDef.Description.Id}");
-                                Logger.Debug($" ");
-                            }
-
-                            endTagCheck:
-                            if (!bNoTag)
-                            {
-                                Logger.Debug($"Lance Count-1: {lance.Count}");
-
-                                lance.Add(mechDef);
-                                currentLanceWeight += mechDef.Chassis.Tonnage;
-
-                                Logger.Debug($"Lance Count-2: {lance.Count}");
-                                Logger.Debug($"Adding mech {mechString} {mechDef.Chassis.Tonnage} tons");
-                            }
-                            else
-                            {
-                                bBlacklisted = false;
-                                bDupe = false;
-                                bExcluded = false;
-                                bNoTag = false;
-                            }
-                        }
-
-                        if (__instance.Constants.Story.StartingTargetSystem == "Oberon")
-                        {
-                            //Check for clan tags
-                            for (int iTag = 0; iTag < mechDef.MechTags.Count; iTag++)
-                            {
-                                foreach (var mechTag in RngStart.Settings.oberonAllowedTags)
-                                {
-                                    if (mechTag == mechDef.MechTags[iTag])
-                                    {
-                                        Logger.Debug($"INCLUDED!");
-                                        Logger.Debug($"Included Tag: {mechDef.MechTags[iTag]}");
-                                        Logger.Debug($"Included Mech:{mechDef.Description.Id}");
-                                        bNoTag = false;
-                                        goto endTagCheck;
-                                    }
-                                    else
-                                    {
-                                        bNoTag = true;
-                                    }
-                                }
-                                Logger.Debug($" ");
-                                Logger.Debug($"Oberon Start!");
-                                Logger.Debug($"Invalid Mech!");
-                                Logger.Debug($"Mech ID: {mechDef.Description.Id}");
-                                Logger.Debug($" ");
-                            }
-
-                            endTagCheck:
-                            if (!bNoTag)
-                            {
-                                Logger.Debug($"Lance Count-1: {lance.Count}");
-
-                                lance.Add(mechDef);
-                                currentLanceWeight += mechDef.Chassis.Tonnage;
-
-                                Logger.Debug($"Lance Count-2: {lance.Count}");
-                                Logger.Debug($"Adding mech {mechString} {mechDef.Chassis.Tonnage} tons");
-                            }
-                            else
-                            {
-                                bBlacklisted = false;
-                                bDupe = false;
-                                bExcluded = false;
-                                bNoTag = false;
-                            }
-                        }
-
-                        if (__instance.Constants.Story.StartingTargetSystem == "Taurus")
-                        {
-                            //Check for clan tags
-                            for (int iTag = 0; iTag < mechDef.MechTags.Count; iTag++)
-                            {
-                                foreach (var mechTag in RngStart.Settings.taurianAllowedTags)
-                                {
-                                    if (mechTag == mechDef.MechTags[iTag])
-                                    {
-                                        Logger.Debug($"INCLUDED!");
-                                        Logger.Debug($"Included Tag: {mechDef.MechTags[iTag]}");
-                                        Logger.Debug($"Included Mech:{mechDef.Description.Id}");
-                                        bNoTag = false;
-                                        goto endTagCheck;
-                                    }
-                                    else
-                                    {
-                                        bNoTag = true;
-                                    }
-                                }
-                                Logger.Debug($" ");
-                                Logger.Debug($"Taurian Start!");
-                                Logger.Debug($"Invalid Mech!");
-                                Logger.Debug($"Mech ID: {mechDef.Description.Id}");
-                                Logger.Debug($" ");
-                            }
-
-                            endTagCheck:
-                            if (!bNoTag)
-                            {
-                                Logger.Debug($"Lance Count-1: {lance.Count}");
-
-                                lance.Add(mechDef);
-                                currentLanceWeight += mechDef.Chassis.Tonnage;
-
-                                Logger.Debug($"Lance Count-2: {lance.Count}");
-                                Logger.Debug($"Adding mech {mechString} {mechDef.Chassis.Tonnage} tons");
-                            }
-                            else
-                            {
-                                bBlacklisted = false;
-                                bDupe = false;
-                                bExcluded = false;
-                                bNoTag = false;
-                            }
-                        }
-
-                        if (__instance.Constants.Story.StartingTargetSystem == "Canopus")
-                        {
-                            //Check for clan tags
-                            for (int iTag = 0; iTag < mechDef.MechTags.Count; iTag++)
-                            {
-                                foreach (var mechTag in RngStart.Settings.magistracyAllowedTags)
-                                {
-                                    if (mechTag == mechDef.MechTags[iTag])
-                                    {
-                                        Logger.Debug($"INCLUDED!");
-                                        Logger.Debug($"Included Tag: {mechDef.MechTags[iTag]}");
-                                        Logger.Debug($"Included Mech:{mechDef.Description.Id}");
-                                        bNoTag = false;
-                                        goto endTagCheck;
-                                    }
-                                    else
-                                    {
-                                        bNoTag = true;
-                                    }
-                                }
-                                Logger.Debug($" ");
-                                Logger.Debug($"Magistracy Start!");
-                                Logger.Debug($"Invalid Mech!");
-                                Logger.Debug($"Mech ID: {mechDef.Description.Id}");
-                                Logger.Debug($" ");
-                            }
-
-                            endTagCheck:
-                            if (!bNoTag)
-                            {
-                                Logger.Debug($"Lance Count-1: {lance.Count}");
-
-                                lance.Add(mechDef);
-                                currentLanceWeight += mechDef.Chassis.Tonnage;
-
-                                Logger.Debug($"Lance Count-2: {lance.Count}");
-                                Logger.Debug($"Adding mech {mechString} {mechDef.Chassis.Tonnage} tons");
-                            }
-                            else
-                            {
-                                bBlacklisted = false;
-                                bDupe = false;
-                                bExcluded = false;
-                                bNoTag = false;
-                            }
-                        }
-
-                        if (__instance.Constants.Story.StartingTargetSystem == "Alpheratz")
-                        {
-                            //Check for clan tags
-                            for (int iTag = 0; iTag < mechDef.MechTags.Count; iTag++)
-                            {
-                                foreach (var mechTag in RngStart.Settings.outworldAllowedTags)
-                                {
-                                    if (mechTag == mechDef.MechTags[iTag])
-                                    {
-                                        Logger.Debug($"INCLUDED!");
-                                        Logger.Debug($"Included Tag: {mechDef.MechTags[iTag]}");
-                                        Logger.Debug($"Included Mech:{mechDef.Description.Id}");
-                                        bNoTag = false;
-                                        goto endTagCheck;
-                                    }
-                                    else
-                                    {
-                                        bNoTag = true;
-                                    }
-                                }
-                                Logger.Debug($" ");
-                                Logger.Debug($"Outworld Start!");
-                                Logger.Debug($"Invalid Mech!");
-                                Logger.Debug($"Mech ID: {mechDef.Description.Id}");
-                                Logger.Debug($" ");
-                            }
-
-                            endTagCheck:
-                            if (!bNoTag)
-                            {
-                                Logger.Debug($"Lance Count-1: {lance.Count}");
-
-                                lance.Add(mechDef);
-                                currentLanceWeight += mechDef.Chassis.Tonnage;
-
-                                Logger.Debug($"Lance Count-2: {lance.Count}");
-                                Logger.Debug($"Adding mech {mechString} {mechDef.Chassis.Tonnage} tons");
-                            }
-                            else
-                            {
-                                bBlacklisted = false;
-                                bDupe = false;
-                                bExcluded = false;
-                                bNoTag = false;
-                            }
-                        }
-
-                        if (__instance.Constants.Story.StartingTargetSystem == "Circinus")
-                        {
-                            //Check for clan tags
-                            for (int iTag = 0; iTag < mechDef.MechTags.Count; iTag++)
-                            {
-                                foreach (var mechTag in RngStart.Settings.circinusAllowedTags)
-                                {
-                                    if (mechTag == mechDef.MechTags[iTag])
-                                    {
-                                        Logger.Debug($"INCLUDED!");
-                                        Logger.Debug($"Included Tag: {mechDef.MechTags[iTag]}");
-                                        Logger.Debug($"Included Mech:{mechDef.Description.Id}");
-                                        bNoTag = false;
-                                        goto endTagCheck;
-                                    }
-                                    else
-                                    {
-                                        bNoTag = true;
-                                    }
-                                }
-                                Logger.Debug($" ");
-                                Logger.Debug($"Circinus Start!");
-                                Logger.Debug($"Invalid Mech!");
-                                Logger.Debug($"Mech ID: {mechDef.Description.Id}");
-                                Logger.Debug($" ");
-                            }
-
-                            endTagCheck:
-                            if (!bNoTag)
-                            {
-                                Logger.Debug($"Lance Count-1: {lance.Count}");
-
-                                lance.Add(mechDef);
-                                currentLanceWeight += mechDef.Chassis.Tonnage;
-
-                                Logger.Debug($"Lance Count-2: {lance.Count}");
-                                Logger.Debug($"Adding mech {mechString} {mechDef.Chassis.Tonnage} tons");
-                            }
-                            else
-                            {
-                                bBlacklisted = false;
-                                bDupe = false;
-                                bExcluded = false;
-                                bNoTag = false;
-                            }
-                        }
-
-                        if (__instance.Constants.Story.StartingTargetSystem == "Alphard(MH)")
-                        {
-                            //Check for clan tags
-                            for (int iTag = 0; iTag < mechDef.MechTags.Count; iTag++)
-                            {
-                                foreach (var mechTag in RngStart.Settings.marianAllowedTags)
-                                {
-                                    if (mechTag == mechDef.MechTags[iTag])
-                                    {
-                                        Logger.Debug($"INCLUDED!");
-                                        Logger.Debug($"Included Tag: {mechDef.MechTags[iTag]}");
-                                        Logger.Debug($"Included Mech:{mechDef.Description.Id}");
-                                        bNoTag = false;
-                                        goto endTagCheck;
-                                    }
-                                    else
-                                    {
-                                        bNoTag = true;
-                                    }
-                                }
-                                Logger.Debug($" ");
-                                Logger.Debug($"Marian Start!");
-                                Logger.Debug($"Invalid Mech!");
-                                Logger.Debug($"Mech ID: {mechDef.Description.Id}");
-                                Logger.Debug($" ");
-                            }
-
-                            endTagCheck:
-                            if (!bNoTag)
-                            {
-                                Logger.Debug($"Lance Count-1: {lance.Count}");
-
-                                lance.Add(mechDef);
-                                currentLanceWeight += mechDef.Chassis.Tonnage;
-
-                                Logger.Debug($"Lance Count-2: {lance.Count}");
-                                Logger.Debug($"Adding mech {mechString} {mechDef.Chassis.Tonnage} tons");
-                            }
-                            else
-                            {
-                                bBlacklisted = false;
-                                bDupe = false;
-                                bExcluded = false;
-                                bNoTag = false;
-                            }
-                        }
-
-                        if (__instance.Constants.Story.StartingTargetSystem == "Lothario")
-                        {
-                            //Check for clan tags
-                            for (int iTag = 0; iTag < mechDef.MechTags.Count; iTag++)
-                            {
-                                foreach (var mechTag in RngStart.Settings.lothianAllowedTags)
-                                {
-                                    if (mechTag == mechDef.MechTags[iTag])
-                                    {
-                                        Logger.Debug($"INCLUDED!");
-                                        Logger.Debug($"Included Tag: {mechDef.MechTags[iTag]}");
-                                        Logger.Debug($"Included Mech:{mechDef.Description.Id}");
-                                        bNoTag = false;
-                                        goto endTagCheck;
-                                    }
-                                    else
-                                    {
-                                        bNoTag = true;
-                                    }
-                                }
-                                Logger.Debug($" ");
-                                Logger.Debug($"Lothian Start!");
-                                Logger.Debug($"Invalid Mech!");
-                                Logger.Debug($"Mech ID: {mechDef.Description.Id}");
-                                Logger.Debug($" ");
-                            }
-
-                            endTagCheck:
-                            if (!bNoTag)
-                            {
-                                Logger.Debug($"Lance Count-1: {lance.Count}");
-
-                                lance.Add(mechDef);
-                                currentLanceWeight += mechDef.Chassis.Tonnage;
-
-                                Logger.Debug($"Lance Count-2: {lance.Count}");
-                                Logger.Debug($"Adding mech {mechString} {mechDef.Chassis.Tonnage} tons");
-                            }
-                            else
-                            {
-                                bBlacklisted = false;
-                                bDupe = false;
-                                bExcluded = false;
-                                bNoTag = false;
-                            }
-                        }
-
-                        if (__instance.Constants.Story.StartingTargetSystem == "Coromodir")
-                        {
-                            //Check for clan tags
-                            for (int iTag = 0; iTag < mechDef.MechTags.Count; iTag++)
-                            {
-                                foreach (var mechTag in RngStart.Settings.auriganAllowedTags)
-                                {
-                                    if (mechTag == mechDef.MechTags[iTag])
-                                    {
-                                        Logger.Debug($"INCLUDED!");
-                                        Logger.Debug($"Included Tag: {mechDef.MechTags[iTag]}");
-                                        Logger.Debug($"Included Mech:{mechDef.Description.Id}");
-                                        bNoTag = false;
-                                        goto endTagCheck;
-                                    }
-                                    else
-                                    {
-                                        bNoTag = true;
-                                    }
-                                }
-                                Logger.Debug($" ");
-                                Logger.Debug($"Aurigan Start!");
-                                Logger.Debug($"Invalid Mech!");
-                                Logger.Debug($"Mech ID: {mechDef.Description.Id}");
-                                Logger.Debug($" ");
-                            }
-
-                            endTagCheck:
-                            if (!bNoTag)
-                            {
-                                Logger.Debug($"Lance Count-1: {lance.Count}");
-
-                                lance.Add(mechDef);
-                                currentLanceWeight += mechDef.Chassis.Tonnage;
-
-                                Logger.Debug($"Lance Count-2: {lance.Count}");
-                                Logger.Debug($"Adding mech {mechString} {mechDef.Chassis.Tonnage} tons");
-                            }
-                            else
-                            {
-                                bBlacklisted = false;
-                                bDupe = false;
-                                bExcluded = false;
-                                bNoTag = false;
-                            }
-                        }
-
-                        if (__instance.Constants.Story.StartingTargetSystem == "Asturias")
-                        {
-                            //Check for clan tags
-                            for (int iTag = 0; iTag < mechDef.MechTags.Count; iTag++)
-                            {
-                                foreach (var mechTag in RngStart.Settings.castilleAllowedTags)
-                                {
-                                    if (mechTag == mechDef.MechTags[iTag])
-                                    {
-                                        Logger.Debug($"INCLUDED!");
-                                        Logger.Debug($"Included Tag: {mechDef.MechTags[iTag]}");
-                                        Logger.Debug($"Included Mech:{mechDef.Description.Id}");
-                                        bNoTag = false;
-                                        goto endTagCheck;
-                                    }
-                                    else
-                                    {
-                                        bNoTag = true;
-                                    }
-                                }
-                                Logger.Debug($" ");
-                                Logger.Debug($"Castille Start!");
-                                Logger.Debug($"Invalid Mech!");
-                                Logger.Debug($"Mech ID: {mechDef.Description.Id}");
-                                Logger.Debug($" ");
-                            }
-
-                            endTagCheck:
-                            if (!bNoTag)
-                            {
-                                Logger.Debug($"Lance Count-1: {lance.Count}");
-
-                                lance.Add(mechDef);
-                                currentLanceWeight += mechDef.Chassis.Tonnage;
-
-                                Logger.Debug($"Lance Count-2: {lance.Count}");
-                                Logger.Debug($"Adding mech {mechString} {mechDef.Chassis.Tonnage} tons");
-                            }
-                            else
-                            {
-                                bBlacklisted = false;
-                                bDupe = false;
-                                bExcluded = false;
-                                bNoTag = false;
-                            }
-                        }
-
-                        if (__instance.Constants.Story.StartingTargetSystem == "FarReach")
-                        {
-                            //Check for clan tags
-                            for (int iTag = 0; iTag < mechDef.MechTags.Count; iTag++)
-                            {
-                                foreach (var mechTag in RngStart.Settings.chainAllowedTags)
-                                {
-                                    if (mechTag == mechDef.MechTags[iTag])
-                                    {
-                                        Logger.Debug($"INCLUDED!");
-                                        Logger.Debug($"Included Tag: {mechDef.MechTags[iTag]}");
-                                        Logger.Debug($"Included Mech:{mechDef.Description.Id}");
-                                        bNoTag = false;
-                                        goto endTagCheck;
-                                    }
-                                    else
-                                    {
-                                        bNoTag = true;
-                                    }
-                                }
-                                Logger.Debug($" ");
-                                Logger.Debug($"Chainelane Start!");
-                                Logger.Debug($"Invalid Mech!");
-                                Logger.Debug($"Mech ID: {mechDef.Description.Id}");
-                                Logger.Debug($" ");
-                            }
-
-                            endTagCheck:
-                            if (!bNoTag)
-                            {
-                                Logger.Debug($"Lance Count-1: {lance.Count}");
-
-                                lance.Add(mechDef);
-                                currentLanceWeight += mechDef.Chassis.Tonnage;
-
-                                Logger.Debug($"Lance Count-2: {lance.Count}");
-                                Logger.Debug($"Adding mech {mechString} {mechDef.Chassis.Tonnage} tons");
-                            }
-                            else
-                            {
-                                bBlacklisted = false;
-                                bDupe = false;
-                                bExcluded = false;
-                                bNoTag = false;
-                            }
-                        }
-
-                        if (__instance.Constants.Story.StartingTargetSystem == "Blackbone(Nyserta 3025+)")
-                        {
-                            //Check for clan tags
-                            for (int iTag = 0; iTag < mechDef.MechTags.Count; iTag++)
-                            {
-                                foreach (var mechTag in RngStart.Settings.elysiaAllowedTags)
-                                {
-                                    if (mechTag == mechDef.MechTags[iTag])
-                                    {
-                                        Logger.Debug($"INCLUDED!");
-                                        Logger.Debug($"Included Tag: {mechDef.MechTags[iTag]}");
-                                        Logger.Debug($"Included Mech:{mechDef.Description.Id}");
-                                        bNoTag = false;
-                                        goto endTagCheck;
-                                    }
-                                    else
-                                    {
-                                        bNoTag = true;
-                                    }
-                                }
-                                Logger.Debug($" ");
-                                Logger.Debug($"Elysian Start!");
-                                Logger.Debug($"Invalid Mech!");
-                                Logger.Debug($"Mech ID: {mechDef.Description.Id}");
-                                Logger.Debug($" ");
-                            }
-
-                            endTagCheck:
-                            if (!bNoTag)
-                            {
-                                Logger.Debug($"Lance Count-1: {lance.Count}");
-
-                                lance.Add(mechDef);
-                                currentLanceWeight += mechDef.Chassis.Tonnage;
-
-                                Logger.Debug($"Lance Count-2: {lance.Count}");
-                                Logger.Debug($"Adding mech {mechString} {mechDef.Chassis.Tonnage} tons");
-                            }
-                            else
-                            {
-                                bBlacklisted = false;
-                                bDupe = false;
-                                bExcluded = false;
-                                bNoTag = false;
-                            }
-                        }
-
-                        if (__instance.Constants.Story.StartingTargetSystem == "Bremen(HL)")
-                        {
-                            //Check for clan tags
-                            for (int iTag = 0; iTag < mechDef.MechTags.Count; iTag++)
-                            {
-                                foreach (var mechTag in RngStart.Settings.hanseAllowedTags)
-                                {
-                                    if (mechTag == mechDef.MechTags[iTag])
-                                    {
-                                        Logger.Debug($"INCLUDED!");
-                                        Logger.Debug($"Included Tag: {mechDef.MechTags[iTag]}");
-                                        Logger.Debug($"Included Mech:{mechDef.Description.Id}");
-                                        bNoTag = false;
-                                        goto endTagCheck;
-                                    }
-                                    else
-                                    {
-                                        bNoTag = true;
-                                    }
-                                }
-                                Logger.Debug($" ");
-                                Logger.Debug($"Hanse Start!");
-                                Logger.Debug($"Invalid Mech!");
-                                Logger.Debug($"Mech ID: {mechDef.Description.Id}");
-                                Logger.Debug($" ");
-                            }
-
-                            endTagCheck:
-                            if (!bNoTag)
-                            {
-                                Logger.Debug($"Lance Count-1: {lance.Count}");
-
-                                lance.Add(mechDef);
-                                currentLanceWeight += mechDef.Chassis.Tonnage;
-
-                                Logger.Debug($"Lance Count-2: {lance.Count}");
-                                Logger.Debug($"Adding mech {mechString} {mechDef.Chassis.Tonnage} tons");
-                            }
-                            else
-                            {
-                                bBlacklisted = false;
-                                bDupe = false;
-                                bExcluded = false;
-                                bNoTag = false;
-                            }
-                        }
-
-                        if (__instance.Constants.Story.StartingTargetSystem == "Trondheim(JF)")
-                        {
-                            //Check for clan tags
-                            for (int iTag = 0; iTag < mechDef.MechTags.Count; iTag++)
-                            {
-                                foreach (var mechTag in RngStart.Settings.jarnfolkAllowedTags)
-                                {
-                                    if (mechTag == mechDef.MechTags[iTag])
-                                    {
-                                        Logger.Debug($"INCLUDED!");
-                                        Logger.Debug($"Included Tag: {mechDef.MechTags[iTag]}");
-                                        Logger.Debug($"Included Mech:{mechDef.Description.Id}");
-                                        bNoTag = false;
-                                        goto endTagCheck;
-                                    }
-                                    else
-                                    {
-                                        bNoTag = true;
-                                    }
-                                }
-                                Logger.Debug($" ");
-                                Logger.Debug($"Vikings Start!");
-                                Logger.Debug($"Invalid Mech!");
-                                Logger.Debug($"Mech ID: {mechDef.Description.Id}");
-                                Logger.Debug($" ");
-                            }
-
-                            endTagCheck:
-                            if (!bNoTag)
-                            {
-                                Logger.Debug($"Lance Count-1: {lance.Count}");
-
-                                lance.Add(mechDef);
-                                currentLanceWeight += mechDef.Chassis.Tonnage;
-
-                                Logger.Debug($"Lance Count-2: {lance.Count}");
-                                Logger.Debug($"Adding mech {mechString} {mechDef.Chassis.Tonnage} tons");
-                            }
-                            else
-                            {
-                                bBlacklisted = false;
-                                bDupe = false;
-                                bExcluded = false;
-                                bNoTag = false;
-                            }
-                        }
-
-                        if (__instance.Constants.Story.StartingTargetSystem == "TortugaPrime")
-                        {
-                            //Check for clan tags
-                            for (int iTag = 0; iTag < mechDef.MechTags.Count; iTag++)
-                            {
-                                foreach (var mechTag in RngStart.Settings.tortugaAllowedTags)
-                                {
-                                    if (mechTag == mechDef.MechTags[iTag])
-                                    {
-                                        Logger.Debug($"INCLUDED!");
-                                        Logger.Debug($"Included Tag: {mechDef.MechTags[iTag]}");
-                                        Logger.Debug($"Included Mech:{mechDef.Description.Id}");
-                                        bNoTag = false;
-                                        goto endTagCheck;
-                                    }
-                                    else
-                                    {
-                                        bNoTag = true;
-                                    }
-                                }
-                                Logger.Debug($" ");
-                                Logger.Debug($"Tortugian Start!");
-                                Logger.Debug($"Invalid Mech!");
-                                Logger.Debug($"Mech ID: {mechDef.Description.Id}");
-                                Logger.Debug($" ");
-                            }
-
-                            endTagCheck:
-                            if (!bNoTag)
-                            {
-                                Logger.Debug($"Lance Count-1: {lance.Count}");
-
-                                lance.Add(mechDef);
-                                currentLanceWeight += mechDef.Chassis.Tonnage;
-
-                                Logger.Debug($"Lance Count-2: {lance.Count}");
-                                Logger.Debug($"Adding mech {mechString} {mechDef.Chassis.Tonnage} tons");
-                            }
-                            else
-                            {
-                                bBlacklisted = false;
-                                bDupe = false;
-                                bExcluded = false;
-                                bNoTag = false;
-                            }
-                        }
-
-                        if (__instance.Constants.Story.StartingTargetSystem == "Gotterdammerung")
-                        {
-                            //Check for clan tags
-                            for (int iTag = 0; iTag < mechDef.MechTags.Count; iTag++)
-                            {
-                                foreach (var mechTag in RngStart.Settings.valkyrateAllowedTags)
-                                {
-                                    if (mechTag == mechDef.MechTags[iTag])
-                                    {
-                                        Logger.Debug($"INCLUDED!");
-                                        Logger.Debug($"Included Tag: {mechDef.MechTags[iTag]}");
-                                        Logger.Debug($"Included Mech:{mechDef.Description.Id}");
-                                        bNoTag = false;
-                                        goto endTagCheck;
-                                    }
-                                    else
-                                    {
-                                        bNoTag = true;
-                                    }
-                                }
-                                Logger.Debug($" ");
-                                Logger.Debug($"Valyrate Start!");
-                                Logger.Debug($"Invalid Mech!");
-                                Logger.Debug($"Mech ID: {mechDef.Description.Id}");
-                                Logger.Debug($" ");
-                            }
-
-                            endTagCheck:
-                            if (!bNoTag)
-                            {
-                                Logger.Debug($"Lance Count-1: {lance.Count}");
-
-                                lance.Add(mechDef);
-                                currentLanceWeight += mechDef.Chassis.Tonnage;
-
-                                Logger.Debug($"Lance Count-2: {lance.Count}");
-                                Logger.Debug($"Adding mech {mechString} {mechDef.Chassis.Tonnage} tons");
-                            }
-                            else
-                            {
-                                bBlacklisted = false;
-                                bDupe = false;
-                                bExcluded = false;
-                                bNoTag = false;
-                            }
-                        }
-
-                        if (__instance.Constants.Story.StartingTargetSystem == "Thala")
-                        {
-                            //Check for clan tags
-                            for (int iTag = 0; iTag < mechDef.MechTags.Count; iTag++)
-                            {
-                                foreach (var mechTag in RngStart.Settings.axumiteAllowedTags)
-                                {
-                                    if (mechTag == mechDef.MechTags[iTag])
-                                    {
-                                        Logger.Debug($"INCLUDED!");
-                                        Logger.Debug($"Included Tag: {mechDef.MechTags[iTag]}");
-                                        Logger.Debug($"Included Mech:{mechDef.Description.Id}");
-                                        bNoTag = false;
-                                        goto endTagCheck;
-                                    }
-                                    else
-                                    {
-                                        bNoTag = true;
-                                    }
-                                }
-                                Logger.Debug($" ");
-                                Logger.Debug($"Axumite Start!");
-                                Logger.Debug($"Invalid Mech!");
-                                Logger.Debug($"Mech ID: {mechDef.Description.Id}");
-                                Logger.Debug($" ");
-                            }
-
-                            endTagCheck:
-                            if (!bNoTag)
-                            {
-                                Logger.Debug($"Lance Count-1: {lance.Count}");
-
-                                lance.Add(mechDef);
-                                currentLanceWeight += mechDef.Chassis.Tonnage;
-
-                                Logger.Debug($"Lance Count-2: {lance.Count}");
-                                Logger.Debug($"Adding mech {mechString} {mechDef.Chassis.Tonnage} tons");
-                            }
-                            else
-                            {
-                                bBlacklisted = false;
-                                bDupe = false;
-                                bExcluded = false;
-                                bNoTag = false;
-                            }
-
-
                         }
                     }
                     else
@@ -2782,11 +1611,11 @@ namespace RandomCampaignStart
 
                     if (lance.Count >= maxLanceSize && currentLanceWeight < RngStart.Settings.MinimumStartingWeight)
                     {
-                        Logger.Debug($"Weight: {currentLanceWeight}");
-                        Logger.Debug($"Lance Count-1: {lance.Count}");
+                        Logger.Debug($"Under-Weight: {currentLanceWeight}");
+                        Logger.Debug($"Lance Count: {lance.Count}");
 
-                        var lightest = lance[0];
-                        for (int i = 0; i < lance.Count; i++)
+                        var lightest = lance[1];
+                        for (int i = 1; i < lance.Count; i++)
                         {
                             if (lightest.Chassis.Tonnage > lance[i].Chassis.Tonnage)
                             {
@@ -2794,18 +1623,18 @@ namespace RandomCampaignStart
                                 Logger.Debug($"Weight: {lance[i].Chassis.Tonnage}");
                                 lightest = lance[i];
                             }
-                            lance.Remove(lightest);
-                            currentLanceWeight -= lightest.Chassis.Tonnage;
                         }
+                        lance.Remove(lightest);
+                        currentLanceWeight -= lightest.Chassis.Tonnage;
                     }
 
                     if (lance.Count < minLanceSize && currentLanceWeight > RngStart.Settings.MaximumStartingWeight)
                     {
-                        Logger.Debug($"Weight: {currentLanceWeight}");
+                        Logger.Debug($"Over-Weight: {currentLanceWeight}");
                         Logger.Debug($"Lance Count-1: {lance.Count}");
 
-                        var heaviest = lance[0];
-                        for (int i = 0; i < lance.Count; i++)
+                        var heaviest = lance[1];
+                        for (int i = 1; i < lance.Count; i++)
                         {
                             if (heaviest.Chassis.Tonnage < lance[i].Chassis.Tonnage)
                             {
@@ -2813,9 +1642,9 @@ namespace RandomCampaignStart
                                 Logger.Debug($"Weight: {lance[i].Chassis.Tonnage}");
                                 heaviest = lance[i];
                             }
-                            lance.Remove(heaviest);
-                            currentLanceWeight -= heaviest.Chassis.Tonnage;
                         }
+                        lance.Remove(heaviest);
+                        currentLanceWeight -= heaviest.Chassis.Tonnage;
                     }
                 }
 
@@ -2833,6 +1662,8 @@ namespace RandomCampaignStart
                 Logger.Debug($"Over tonnage Minimum amount: {Mintonnagedifference}");
                 lance.Clear();
             }
+
+            Cheats.MyMethod(__instance);
         }
 
         [HarmonyPatch(typeof(SimGameState), "_OnDefsLoadComplete")]
@@ -2849,218 +1680,17 @@ namespace RandomCampaignStart
             }
         }
 
-        internal class ModSettings
-        {
-            /*   TAG RANDOM SETTINGS    */
-            //Excluded Mechs for all starts
-            public List<string> ExcludedMechs = new List<string>();
-
-            //Vanilla Start Variables
-            public List<string> vanAllowedTags = new List<string>();
-
-            //Default Faction Variables
-            public List<string> defAllowedTags = new List<string>();
-
-            //House Steiner Variables
-            public List<string> steinerAllowedTags = new List<string>();
-
-            //House Davion Variables
-            public List<string> davionAllowedTags = new List<string>();
-
-            //House Kurita Variables
-            public List<string> kuritaAllowedTags = new List<string>();
-
-            //House Marik Variables
-            public List<string> marikAllowedTags = new List<string>();
-
-            //House Liao Variables
-            public List<string> liaoAllowedTags = new List<string>();
-
-            //Rasalhague Variables
-            public List<string> rasAllowedTags = new List<string>();
-            
-            //Clan Start Variables
-            public List<string> clanAllowedTags = new List<string>();
-
-            //St. Ives Variables
-            public List<string> ivesAllowedTags = new List<string>();
-
-            //Oberon Variables
-            public List<string> oberonAllowedTags = new List<string>();
-
-            //Taurian Variables
-            public List<string> taurianAllowedTags = new List<string>();
-
-            //Magistracy Variables
-            public List<string> magistracyAllowedTags = new List<string>();
-
-            //Outworld Variables
-            public List<string> outworldAllowedTags = new List<string>();
-
-            //Circinus Variables
-            public List<string> circinusAllowedTags = new List<string>();
-
-            //House Marian Variables
-            public List<string> marianAllowedTags = new List<string>();
-
-            //House Lothian Variables
-            public List<string> lothianAllowedTags = new List<string>();
-
-            //Aurigan Restoration Variables
-            public List<string> auriganAllowedTags = new List<string>();
-
-            //House Castille Variables
-            public List<string> castilleAllowedTags = new List<string>();
-
-            //Chainelane Variables
-            public List<string> chainAllowedTags = new List<string>();
-
-            //Elysia Variables
-            public List<string> elysiaAllowedTags = new List<string>();
-
-            //Hanse Variables
-            public List<string> hanseAllowedTags = new List<string>();
-
-            //Vikings Variables
-            public List<string> jarnfolkAllowedTags = new List<string>();
-
-            //Tortuga Variables
-            public List<string> tortugaAllowedTags = new List<string>();
-
-            //Valkyrate Variables
-            public List<string> valkyrateAllowedTags = new List<string>();
-
-            //Axumite Variables
-            public List<string> axumiteAllowedTags = new List<string>();
-
-
-            /*   FULL RANDOM SETTINGS   */
-            //Vanilla Start Variables
-            public List<string> vanExcludedMechs = new List<string>();
-
-            //Pirate Faction Variables
-            public List<string> pirateExcludedMechs = new List<string>();
-
-            //Inner Sphere Variables
-            public List<string> innerExcludedMechs = new List<string>();
-
-            //Periphery Start Variables
-            public List<string> periExcludedMechs = new List<string>();
-
-            //Deep Periphery Start Variables
-            public List<string> deepExcludedMechs = new List<string>();
-
-            //Clan Start Variables
-            public List<string> clanExcludedMechs = new List<string>();
-
-
-            /*     LEGACY SETTINGS      */
-            //Vanilla Start variables
-            public List<string> AssaultMechsPossible = new List<string>();
-            public List<string> HeavyMechsPossible = new List<string>();
-            public List<string> LightMechsPossible = new List<string>();
-            public List<string> MediumMechsPossible = new List<string>();
-
-            public int NumberAssaultMechs = 0;
-            public int NumberHeavyMechs = 0;
-            public int NumberLightMechs = 3;
-            public int NumberMediumMechs = 1;
-
-            //Pirate Faction variables
-            public List<string> pirateAssaultMechsPossible = new List<string>();
-            public List<string> pirateHeavyMechsPossible = new List<string>();
-            public List<string> pirateLightMechsPossible = new List<string>();
-            public List<string> pirateMediumMechsPossible = new List<string>();
-
-            public int pirateNumberAssaultMechs = 0;
-            public int pirateNumberHeavyMechs = 0;
-            public int pirateNumberLightMechs = 3;
-            public int pirateNumberMediumMechs = 1;
-            
-            //Inner Sphere variables
-            public List<string> innerAssaultMechsPossible = new List<string>();
-            public List<string> innerHeavyMechsPossible = new List<string>();
-            public List<string> innerLightMechsPossible = new List<string>();
-            public List<string> innerMediumMechsPossible = new List<string>();
-
-            public int innerNumberAssaultMechs = 0;
-            public int innerNumberHeavyMechs = 0;
-            public int innerNumberLightMechs = 3;
-            public int innerNumberMediumMechs = 1;
-            
-            //Periphery Start Variables
-            public List<string> periAssaultMechsPossible = new List<string>();
-            public List<string> periHeavyMechsPossible = new List<string>();
-            public List<string> periLightMechsPossible = new List<string>();
-            public List<string> periMediumMechsPossible = new List<string>();
-
-            public int periNumberAssaultMechs = 0;
-            public int periNumberHeavyMechs = 0;
-            public int periNumberLightMechs = 3;
-            public int periNumberMediumMechs = 1;
-            
-            //Deep Periphery Start Variables
-            public List<string> deepAssaultMechsPossible = new List<string>();
-            public List<string> deepHeavyMechsPossible = new List<string>();
-            public List<string> deepLightMechsPossible = new List<string>();
-            public List<string> deepMediumMechsPossible = new List<string>();
-
-            public int deepNumberAssaultMechs = 0;
-            public int deepNumberHeavyMechs = 0;
-            public int deepNumberLightMechs = 3;
-            public int deepNumberMediumMechs = 1;
-
-            //Clan Start variables
-            public List<string> clanAssaultMechsPossible = new List<string>();
-            public List<string> clanHeavyMechsPossible = new List<string>();
-            public List<string> clanLightMechsPossible = new List<string>();
-            public List<string> clanMediumMechsPossible = new List<string>();
-
-            public int clanNumberAssaultMechs = 0;
-            public int clanNumberHeavyMechs = 0;
-            public int clanNumberLightMechs = 3;
-            public int clanNumberMediumMechs = 1;
-
-            /*  OTHER RANDOM SETTINGS   */
-            public float MinimumStartingWeight = 165;
-            public float MaximumStartingWeight = 175;
-            public float MaximumMechWeight = 50;
-            public float MinimumMechWeight = 20;
-            public int MinimumLanceSize = 4;
-            public int MaximumLanceSize = 6;
-            public bool AllowCustomMechs = false;
-            public bool AllowDuplicateChassis = false;
-            public float MechPercentageStartingCost = 0.2f;
-
-            public List<string> StartingRonin = new List<string>();
-            public int NumberRoninFromList = 4;
-
-            public int NumberProceduralPilots = 0;
-            public int NumberRandomRonin = 4;
-
-            public bool RemoveAncestralMech = false;
-            public bool IgnoreAncestralMech = true;
-
-            public string ModDirectory = string.Empty;
-            public bool Debug = false;
-            public int SpiderLoops = 1000;
-            public int Loops = 1;
-
-            //Mode Toggles
-            public bool FullRandomMode = true;
-            public bool TagRandomLance = true;
-
-        }
-
         public static class RngStart
         {
-            internal static ModSettings Settings;
+            public static ModSettings Settings;
+
+            public static CheatSettings cSettings;
 
             public static void Init(string modDir, string modSettings)
             {
                 var harmony = HarmonyInstance.Create("io.github.mpstark.RandomCampaignStart");
                 harmony.PatchAll(Assembly.GetExecutingAssembly());
-
+                
                 // read settings
                 try
                 {
@@ -3071,6 +1701,8 @@ namespace RandomCampaignStart
                 {
                     Settings = new ModSettings();
                 }
+
+                Cheats.Start(modDir);
             }
         }
     }
