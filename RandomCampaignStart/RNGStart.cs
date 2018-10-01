@@ -1642,6 +1642,7 @@ namespace RandomCampaignStart
                                 Logger.Debug($"Weight: {lance[i].Chassis.Tonnage}");
                                 heaviest = lance[i];
                             }
+                            
                         }
                         lance.Remove(heaviest);
                         currentLanceWeight -= heaviest.Chassis.Tonnage;
