@@ -747,7 +747,7 @@ namespace RandomCampaignStart
                 lance.Clear();
             }
 
-            Cheats.MyMethod(__instance);
+            //Cheats.MyMethod(__instance);
         }
 
         [HarmonyPatch(typeof(SimGameState), "_OnDefsLoadComplete")]
@@ -786,7 +786,7 @@ namespace RandomCampaignStart
                     Settings = new ModSettings();
                 }
 
-                Cheats.Start(modDir);
+                //Cheats.Start(modDir);
             }
         }
     }
