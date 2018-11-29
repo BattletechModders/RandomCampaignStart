@@ -22,27 +22,15 @@ namespace RandomCampaignStart
         public List<List<string>> AllowedTags = new List<List<string>>();
 
 
-        /*   FULL RANDOM SETTINGS   */
-        //Vanilla Start Variables
-        public List<string> vanExcludedMechs = new List<string>();
-
-        //Pirate Faction Variables
-        public List<string> pirateExcludedMechs = new List<string>();
-
-        //Inner Sphere Variables
-        public List<string> innerExcludedMechs = new List<string>();
-
-        //Periphery Start Variables
-        public List<string> periExcludedMechs = new List<string>();
-
-        //Deep Periphery Start Variables
-        public List<string> deepExcludedMechs = new List<string>();
-
-        //Clan Start Variables
-        public List<string> clanExcludedMechs = new List<string>();
-
-
         /*     LEGACY SETTINGS      */
+        public float LegacyMinStartingWeight = 165;
+        public float LegacyMaxStartingWeight = 175;
+        public float LegacyMaxMechWeight = 50;
+        public float LegacyMinMechWeight = 20;
+
+        public List<string> startTypes = new List<string>();
+        public List<List<string>> startTypeOptions = new List<List<string>>();
+
         //Vanilla Start variables
         public List<string> AssaultMechsPossible = new List<string>();
         public List<string> HeavyMechsPossible = new List<string>();
@@ -109,6 +97,9 @@ namespace RandomCampaignStart
         public int clanNumberLightMechs = 3;
         public int clanNumberMediumMechs = 1;
 
+        //Starting Lance
+        public List<string> startingLance = new List<string>();
+
         /*  OTHER RANDOM SETTINGS   */
         public float MinimumStartingWeight = 165;
         public float MaximumStartingWeight = 175;
@@ -135,7 +126,7 @@ namespace RandomCampaignStart
         public int Loops = 1;
 
         //Mode Toggles
-        public bool FullRandomMode = true;
+        public bool NotRandomMode = true;
         public bool TagRandomLance = true;
     }
 }

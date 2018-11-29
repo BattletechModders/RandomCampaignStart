@@ -148,8 +148,7 @@ namespace RandomCampaignStart
                     }
                     if (RngStart.Settings.MaximumMechWeight != 100)
                     {
-
-                        if (kvp.Value.Tonnage > RngStart.Settings.MaximumMechWeight || kvp.Value.Tonnage < RngStart.Settings.MinimumMechWeight)
+                        if (kvp.Value.Tonnage > RngStart.Settings.LegacyMaxMechWeight || kvp.Value.Tonnage < RngStart.Settings.LegacyMinMechWeight)
                         {
                             continue;
                         }
@@ -162,7 +161,7 @@ namespace RandomCampaignStart
                 for (int xloop = 0; xloop < RngStart.Settings.Loops; xloop++)
                 {
                     int LanceCounter = 1;
-                    if (!RngStart.Settings.FullRandomMode)
+                    if (!RngStart.Settings.NotRandomMode)
                     {
                         
                         // remove ancestral mech if specified
@@ -173,8 +172,17 @@ namespace RandomCampaignStart
                             //Logger.Debug($"Lance Size(Legacy2): {lance.Count}");
                         }
                         
-                        while (currentLanceWeight < RngStart.Settings.MinimumStartingWeight || currentLanceWeight > RngStart.Settings.MaximumStartingWeight)
+                        while (currentLanceWeight < RngStart.Settings.LegacyMinStartingWeight || currentLanceWeight > RngStart.Settings.LegacyMaxStartingWeight)
                         {
+                            if (!firstrun)
+                            {
+                                for (var i = baySlot; i < 6; i++)
+                                {
+                                    __instance.ActiveMechs.Remove(i);
+                                }
+                                currentLanceWeight = 0;
+                            }
+
                             if (RemoveAncestralMech == true)
                             {
                                 baySlot = 0;
@@ -184,16 +192,7 @@ namespace RandomCampaignStart
                                 currentLanceWeight = AncestralMechDef.Chassis.Tonnage;
                                 baySlot = 1;
                             }
-
-                            if (!firstrun)
-                            {
-                                for (var i = baySlot; i < 6; i++)
-                                {
-                                    __instance.ActiveMechs.Remove(i);
-                                    currentLanceWeight = 0;
-                                }
-                            }
-
+                            
                             //It's not a BUG, it's a FEATURE.
                             LanceCounter++;
                             if (LanceCounter > RngStart.Settings.SpiderLoops)
@@ -208,604 +207,55 @@ namespace RandomCampaignStart
                             }
 
                             var legacyLance = new List<string>();
-                            if (__instance.Constants.Story.StartingTargetSystem == "UrCruinne")
+                            for (int i = 0; i < RngStart.Settings.startTypes.Count; i++)
                             {
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.AssaultMechsPossible, RngStart.Settings.NumberAssaultMechs));
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.HeavyMechsPossible, RngStart.Settings.NumberHeavyMechs));
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.MediumMechsPossible, RngStart.Settings.NumberMediumMechs));
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.LightMechsPossible, RngStart.Settings.NumberLightMechs));
-
-                                /*for(int i = 0; i < legacyLance.Count; i++)
+                                foreach (var planet in RngStart.Settings.startTypeOptions[i])
                                 {
-                                    var mechDef = new MechDef(__instance.DataManager.MechDefs.Get(legacyLance[i]), __instance.GenerateSimGameUID());
-                                    foreach (var mechID in legacyLance)
+                                    if (planet == __instance.Constants.Story.StartingTargetSystem)
                                     {
-                                        if (mechID == mechDef.Description.Id)
+                                        if (RngStart.Settings.startTypes[i] == "InnerSphere")
                                         {
-                                            lance.Add(mechDef);
+                                            legacyLance.AddRange(GetRandomSubList(RngStart.Settings.innerAssaultMechsPossible, RngStart.Settings.innerNumberAssaultMechs));
+                                            legacyLance.AddRange(GetRandomSubList(RngStart.Settings.innerHeavyMechsPossible, RngStart.Settings.innerNumberHeavyMechs));
+                                            legacyLance.AddRange(GetRandomSubList(RngStart.Settings.innerMediumMechsPossible, RngStart.Settings.innerNumberMediumMechs));
+                                            legacyLance.AddRange(GetRandomSubList(RngStart.Settings.innerLightMechsPossible, RngStart.Settings.innerNumberLightMechs));
+                                        }
 
-                                            Logger.Debug($"Mech ID: {mechDef.Description.Id}");
-                                            Logger.Debug($"Mech Weight: {mechDef.Chassis.Tonnage}");
+                                        if (RngStart.Settings.startTypes[i] == "Periphery")
+                                        {
+                                            legacyLance.AddRange(GetRandomSubList(RngStart.Settings.periAssaultMechsPossible, RngStart.Settings.periNumberAssaultMechs));
+                                            legacyLance.AddRange(GetRandomSubList(RngStart.Settings.periHeavyMechsPossible, RngStart.Settings.periNumberHeavyMechs));
+                                            legacyLance.AddRange(GetRandomSubList(RngStart.Settings.periMediumMechsPossible, RngStart.Settings.periNumberMediumMechs));
+                                            legacyLance.AddRange(GetRandomSubList(RngStart.Settings.periLightMechsPossible, RngStart.Settings.periNumberLightMechs));
+                                        }
+
+                                        if (RngStart.Settings.startTypes[i] == "DeepPeriphery")
+                                        {
+                                            legacyLance.AddRange(GetRandomSubList(RngStart.Settings.deepAssaultMechsPossible, RngStart.Settings.deepNumberAssaultMechs));
+                                            legacyLance.AddRange(GetRandomSubList(RngStart.Settings.deepHeavyMechsPossible, RngStart.Settings.deepNumberHeavyMechs));
+                                            legacyLance.AddRange(GetRandomSubList(RngStart.Settings.deepMediumMechsPossible, RngStart.Settings.deepNumberMediumMechs));
+                                            legacyLance.AddRange(GetRandomSubList(RngStart.Settings.deepLightMechsPossible, RngStart.Settings.deepNumberLightMechs));
+                                        }
+
+                                        if (RngStart.Settings.startTypes[i] == "Clan")
+                                        {
+                                            legacyLance.AddRange(GetRandomSubList(RngStart.Settings.clanAssaultMechsPossible, RngStart.Settings.clanNumberAssaultMechs));
+                                            legacyLance.AddRange(GetRandomSubList(RngStart.Settings.clanHeavyMechsPossible, RngStart.Settings.clanNumberHeavyMechs));
+                                            legacyLance.AddRange(GetRandomSubList(RngStart.Settings.clanMediumMechsPossible, RngStart.Settings.clanNumberMediumMechs));
+                                            legacyLance.AddRange(GetRandomSubList(RngStart.Settings.clanLightMechsPossible, RngStart.Settings.clanNumberLightMechs));
+                                        }
+
+                                        if (RngStart.Settings.startTypes[i] == "Pirates")
+                                        {
+                                            legacyLance.AddRange(GetRandomSubList(RngStart.Settings.pirateAssaultMechsPossible, RngStart.Settings.pirateNumberAssaultMechs));
+                                            legacyLance.AddRange(GetRandomSubList(RngStart.Settings.pirateHeavyMechsPossible, RngStart.Settings.pirateNumberHeavyMechs));
+                                            legacyLance.AddRange(GetRandomSubList(RngStart.Settings.pirateMediumMechsPossible, RngStart.Settings.pirateNumberMediumMechs));
+                                            legacyLance.AddRange(GetRandomSubList(RngStart.Settings.pirateLightMechsPossible, RngStart.Settings.pirateNumberLightMechs));
                                         }
                                     }
                                 }
-                                Logger.Debug($"LegacyLance Weight: {currentLanceWeight}");*/
                             }
-                            if (__instance.Constants.Story.StartingTargetSystem == "Galatea")
-                            {
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.innerAssaultMechsPossible, RngStart.Settings.innerNumberAssaultMechs));
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.innerHeavyMechsPossible, RngStart.Settings.innerNumberHeavyMechs));
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.innerMediumMechsPossible, RngStart.Settings.innerNumberMediumMechs));
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.innerLightMechsPossible, RngStart.Settings.innerNumberLightMechs));
-
-                                /*for (int i = 0; i < legacyLance.Count; i++)
-                                {
-                                    var mechDef = new MechDef(__instance.DataManager.MechDefs.Get(legacyLance[i]), __instance.GenerateSimGameUID());
-                                    foreach (var mechID in legacyLance)
-                                    {
-                                        if (mechID == mechDef.Description.Id)
-                                        {
-                                            lance.Add(mechDef);
-
-                                            Logger.Debug($"Mech ID: {mechDef.Description.Id}");
-                                            Logger.Debug($"Mech Weight: {mechDef.Chassis.Tonnage}");
-                                        }
-                                    }
-                                }
-                                Logger.Debug($"LegacyLance Weight: {currentLanceWeight}");*/
-                            }
-                            if (__instance.Constants.Story.StartingTargetSystem == "Tharkad")
-                            {
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.innerAssaultMechsPossible, RngStart.Settings.innerNumberAssaultMechs));
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.innerHeavyMechsPossible, RngStart.Settings.innerNumberHeavyMechs));
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.innerMediumMechsPossible, RngStart.Settings.innerNumberMediumMechs));
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.innerLightMechsPossible, RngStart.Settings.innerNumberLightMechs));
-
-                                /*for (int i = 0; i < legacyLance.Count; i++)
-                                {
-                                    var mechDef = new MechDef(__instance.DataManager.MechDefs.Get(legacyLance[i]), __instance.GenerateSimGameUID());
-                                    foreach (var mechID in legacyLance)
-                                    {
-                                        if (mechID == mechDef.Description.Id)
-                                        {
-                                            lance.Add(mechDef);
-
-                                            Logger.Debug($"Mech ID: {mechDef.Description.Id}");
-                                            Logger.Debug($"Mech Weight: {mechDef.Chassis.Tonnage}");
-                                        }
-                                    }
-                                }
-                                Logger.Debug($"LegacyLance Weight: {currentLanceWeight}");*/
-                            }
-                        if (__instance.Constants.Story.StartingTargetSystem == "NewAvalon")
-                            {
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.innerAssaultMechsPossible, RngStart.Settings.innerNumberAssaultMechs));
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.innerHeavyMechsPossible, RngStart.Settings.innerNumberHeavyMechs));
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.innerMediumMechsPossible, RngStart.Settings.innerNumberMediumMechs));
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.innerLightMechsPossible, RngStart.Settings.innerNumberLightMechs));
-
-                                /*for (int i = 0; i < legacyLance.Count; i++)
-                                {
-                                    var mechDef = new MechDef(__instance.DataManager.MechDefs.Get(legacyLance[i]), __instance.GenerateSimGameUID());
-                                    foreach (var mechID in legacyLance)
-                                    {
-                                        if (mechID == mechDef.Description.Id)
-                                        {
-                                            lance.Add(mechDef);
-
-                                            Logger.Debug($"Mech ID: {mechDef.Description.Id}");
-                                            Logger.Debug($"Mech Weight: {mechDef.Chassis.Tonnage}");
-                                        }
-                                    }
-                                }
-                                Logger.Debug($"LegacyLance Weight: {currentLanceWeight}");*/
-                            }
-                            if (__instance.Constants.Story.StartingTargetSystem == "Luthien")
-                            {
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.innerAssaultMechsPossible, RngStart.Settings.innerNumberAssaultMechs));
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.innerHeavyMechsPossible, RngStart.Settings.innerNumberHeavyMechs));
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.innerMediumMechsPossible, RngStart.Settings.innerNumberMediumMechs));
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.innerLightMechsPossible, RngStart.Settings.innerNumberLightMechs));
-
-                                /*for (int i = 0; i < legacyLance.Count; i++)
-                                {
-                                    var mechDef = new MechDef(__instance.DataManager.MechDefs.Get(legacyLance[i]), __instance.GenerateSimGameUID());
-                                    foreach (var mechID in legacyLance)
-                                    {
-                                        if (mechID == mechDef.Description.Id)
-                                        {
-                                            lance.Add(mechDef);
-
-                                            Logger.Debug($"Mech ID: {mechDef.Description.Id}");
-                                            Logger.Debug($"Mech Weight: {mechDef.Chassis.Tonnage}");
-                                        }
-                                    }
-                                }
-                                Logger.Debug($"LegacyLance Weight: {currentLanceWeight}");*/
-                            }
-                            if (__instance.Constants.Story.StartingTargetSystem == "Atreus(FWL)")
-                            {
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.innerAssaultMechsPossible, RngStart.Settings.innerNumberAssaultMechs));
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.innerHeavyMechsPossible, RngStart.Settings.innerNumberHeavyMechs));
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.innerMediumMechsPossible, RngStart.Settings.innerNumberMediumMechs));
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.innerLightMechsPossible, RngStart.Settings.innerNumberLightMechs));
-
-                                /*for (int i = 0; i < legacyLance.Count; i++)
-                                {
-                                    var mechDef = new MechDef(__instance.DataManager.MechDefs.Get(legacyLance[i]), __instance.GenerateSimGameUID());
-                                    foreach (var mechID in legacyLance)
-                                    {
-                                        if (mechID == mechDef.Description.Id)
-                                        {
-                                            lance.Add(mechDef);
-
-                                            Logger.Debug($"Mech ID: {mechDef.Description.Id}");
-                                            Logger.Debug($"Mech Weight: {mechDef.Chassis.Tonnage}");
-                                        }
-                                    }
-                                }
-                                Logger.Debug($"LegacyLance Weight: {currentLanceWeight}");*/
-                            }
-                            if (__instance.Constants.Story.StartingTargetSystem == "Sian")
-                            {
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.innerAssaultMechsPossible, RngStart.Settings.innerNumberAssaultMechs));
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.innerHeavyMechsPossible, RngStart.Settings.innerNumberHeavyMechs));
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.innerMediumMechsPossible, RngStart.Settings.innerNumberMediumMechs));
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.innerLightMechsPossible, RngStart.Settings.innerNumberLightMechs));
-
-                                /*for (int i = 0; i < legacyLance.Count; i++)
-                                {
-                                    var mechDef = new MechDef(__instance.DataManager.MechDefs.Get(legacyLance[i]), __instance.GenerateSimGameUID());
-                                    foreach (var mechID in legacyLance)
-                                    {
-                                        if (mechID == mechDef.Description.Id)
-                                        {
-                                            lance.Add(mechDef);
-
-                                            Logger.Debug($"Mech ID: {mechDef.Description.Id}");
-                                            Logger.Debug($"Mech Weight: {mechDef.Chassis.Tonnage}");
-                                        }
-                                    }
-                                }
-                                Logger.Debug($"LegacyLance Weight: {currentLanceWeight}");*/
-                            }
-                            if (__instance.Constants.Story.StartingTargetSystem == "Rasalhague")
-                            {
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.innerAssaultMechsPossible, RngStart.Settings.innerNumberAssaultMechs));
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.innerHeavyMechsPossible, RngStart.Settings.innerNumberHeavyMechs));
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.innerMediumMechsPossible, RngStart.Settings.innerNumberMediumMechs));
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.innerLightMechsPossible, RngStart.Settings.innerNumberLightMechs));
-
-                                /*for (int i = 0; i < legacyLance.Count; i++)
-                                {
-                                    var mechDef = new MechDef(__instance.DataManager.MechDefs.Get(legacyLance[i]), __instance.GenerateSimGameUID());
-                                    foreach (var mechID in legacyLance)
-                                    {
-                                        if (mechID == mechDef.Description.Id)
-                                        {
-                                            lance.Add(mechDef);
-
-                                            Logger.Debug($"Mech ID: {mechDef.Description.Id}");
-                                            Logger.Debug($"Mech Weight: {mechDef.Chassis.Tonnage}");
-                                        }
-                                    }
-                                }
-                                Logger.Debug($"LegacyLance Weight: {currentLanceWeight}");*/
-                            }
-                            if (__instance.Constants.Story.StartingTargetSystem == "StranaMechty")
-                            {
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.clanAssaultMechsPossible, RngStart.Settings.clanNumberAssaultMechs));
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.clanHeavyMechsPossible, RngStart.Settings.clanNumberHeavyMechs));
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.clanMediumMechsPossible, RngStart.Settings.clanNumberMediumMechs));
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.clanLightMechsPossible, RngStart.Settings.clanNumberLightMechs));
-
-                                /*for (int i = 0; i < legacyLance.Count; i++)
-                                {
-                                    var mechDef = new MechDef(__instance.DataManager.MechDefs.Get(legacyLance[i]), __instance.GenerateSimGameUID());
-                                    foreach (var mechID in legacyLance)
-                                    {
-                                        if (mechID == mechDef.Description.Id)
-                                        {
-                                            lance.Add(mechDef);
-
-                                            Logger.Debug($"Mech ID: {mechDef.Description.Id}");
-                                            Logger.Debug($"Mech Weight: {mechDef.Chassis.Tonnage}");
-                                        }
-                                    }
-                                }
-                                Logger.Debug($"LegacyLance Weight: {currentLanceWeight}");*/
-                            }
-                            if (__instance.Constants.Story.StartingTargetSystem == "St.Ives")
-                            {
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.innerAssaultMechsPossible, RngStart.Settings.innerNumberAssaultMechs));
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.innerHeavyMechsPossible, RngStart.Settings.innerNumberHeavyMechs));
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.innerMediumMechsPossible, RngStart.Settings.innerNumberMediumMechs));
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.innerLightMechsPossible, RngStart.Settings.innerNumberLightMechs));
-
-                                /*for (int i = 0; i < legacyLance.Count; i++)
-                                {
-                                    var mechDef = new MechDef(__instance.DataManager.MechDefs.Get(legacyLance[i]), __instance.GenerateSimGameUID());
-                                    foreach (var mechID in legacyLance)
-                                    {
-                                        if (mechID == mechDef.Description.Id)
-                                        {
-                                            lance.Add(mechDef);
-
-                                            Logger.Debug($"Mech ID: {mechDef.Description.Id}");
-                                            Logger.Debug($"Mech Weight: {mechDef.Chassis.Tonnage}");
-                                        }
-                                    }
-                                }
-                                Logger.Debug($"LegacyLance Weight: {currentLanceWeight}");*/
-                            }
-                            if (__instance.Constants.Story.StartingTargetSystem == "Oberon")
-                            {
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.pirateAssaultMechsPossible, RngStart.Settings.pirateNumberAssaultMechs));
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.pirateHeavyMechsPossible, RngStart.Settings.pirateNumberHeavyMechs));
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.pirateMediumMechsPossible, RngStart.Settings.pirateNumberMediumMechs));
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.pirateLightMechsPossible, RngStart.Settings.pirateNumberLightMechs));
-
-                                /*for (int i = 0; i < legacyLance.Count; i++)
-                                {
-                                    var mechDef = new MechDef(__instance.DataManager.MechDefs.Get(legacyLance[i]), __instance.GenerateSimGameUID());
-                                    foreach (var mechID in legacyLance)
-                                    {
-                                        if (mechID == mechDef.Description.Id)
-                                        {
-                                            lance.Add(mechDef);
-
-                                            Logger.Debug($"Mech ID: {mechDef.Description.Id}");
-                                            Logger.Debug($"Mech Weight: {mechDef.Chassis.Tonnage}");
-                                        }
-                                    }
-                                }
-                                Logger.Debug($"LegacyLance Weight: {currentLanceWeight}");*/
-                            }
-                            if (__instance.Constants.Story.StartingTargetSystem == "Taurus")
-                            {
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.periAssaultMechsPossible, RngStart.Settings.periNumberAssaultMechs));
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.periHeavyMechsPossible, RngStart.Settings.periNumberHeavyMechs));
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.periMediumMechsPossible, RngStart.Settings.periNumberMediumMechs));
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.periLightMechsPossible, RngStart.Settings.periNumberLightMechs));
-
-                                /*for (int i = 0; i < legacyLance.Count; i++)
-                                {
-                                    var mechDef = new MechDef(__instance.DataManager.MechDefs.Get(legacyLance[i]), __instance.GenerateSimGameUID());
-                                    foreach (var mechID in legacyLance)
-                                    {
-                                        if (mechID == mechDef.Description.Id)
-                                        {
-                                            lance.Add(mechDef);
-
-                                            Logger.Debug($"Mech ID: {mechDef.Description.Id}");
-                                            Logger.Debug($"Mech Weight: {mechDef.Chassis.Tonnage}");
-                                        }
-                                    }
-                                }
-                                Logger.Debug($"LegacyLance Weight: {currentLanceWeight}");*/
-                            }
-                            if (__instance.Constants.Story.StartingTargetSystem == "Canopus")
-                            {
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.periAssaultMechsPossible, RngStart.Settings.periNumberAssaultMechs));
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.periHeavyMechsPossible, RngStart.Settings.periNumberHeavyMechs));
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.periMediumMechsPossible, RngStart.Settings.periNumberMediumMechs));
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.periLightMechsPossible, RngStart.Settings.periNumberLightMechs));
-
-                                /*for (int i = 0; i < legacyLance.Count; i++)
-                                {
-                                    var mechDef = new MechDef(__instance.DataManager.MechDefs.Get(legacyLance[i]), __instance.GenerateSimGameUID());
-                                    foreach (var mechID in legacyLance)
-                                    {
-                                        if (mechID == mechDef.Description.Id)
-                                        {
-                                            lance.Add(mechDef);
-
-                                            Logger.Debug($"Mech ID: {mechDef.Description.Id}");
-                                            Logger.Debug($"Mech Weight: {mechDef.Chassis.Tonnage}");
-                                        }
-                                    }
-                                }
-                                Logger.Debug($"LegacyLance Weight: {currentLanceWeight}");*/
-                            }
-                            if (__instance.Constants.Story.StartingTargetSystem == "Alpheratz")
-                            {
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.periAssaultMechsPossible, RngStart.Settings.periNumberAssaultMechs));
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.periHeavyMechsPossible, RngStart.Settings.periNumberHeavyMechs));
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.periMediumMechsPossible, RngStart.Settings.periNumberMediumMechs));
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.periLightMechsPossible, RngStart.Settings.periNumberLightMechs));
-
-                                /*for (int i = 0; i < legacyLance.Count; i++)
-                                {
-                                    var mechDef = new MechDef(__instance.DataManager.MechDefs.Get(legacyLance[i]), __instance.GenerateSimGameUID());
-                                    foreach (var mechID in legacyLance)
-                                    {
-                                        if (mechID == mechDef.Description.Id)
-                                        {
-                                            lance.Add(mechDef);
-
-                                            Logger.Debug($"Mech ID: {mechDef.Description.Id}");
-                                            Logger.Debug($"Mech Weight: {mechDef.Chassis.Tonnage}");
-                                        }
-                                    }
-                                }
-                                Logger.Debug($"LegacyLance Weight: {currentLanceWeight}");*/
-                            }
-                            if (__instance.Constants.Story.StartingTargetSystem == "Circinus")
-                            {
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.pirateAssaultMechsPossible, RngStart.Settings.pirateNumberAssaultMechs));
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.pirateHeavyMechsPossible, RngStart.Settings.pirateNumberHeavyMechs));
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.pirateMediumMechsPossible, RngStart.Settings.pirateNumberMediumMechs));
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.pirateLightMechsPossible, RngStart.Settings.pirateNumberLightMechs));
-
-                                /*for (int i = 0; i < legacyLance.Count; i++)
-                                {
-                                    var mechDef = new MechDef(__instance.DataManager.MechDefs.Get(legacyLance[i]), __instance.GenerateSimGameUID());
-                                    foreach (var mechID in legacyLance)
-                                    {
-                                        if (mechID == mechDef.Description.Id)
-                                        {
-                                            lance.Add(mechDef);
-
-                                            Logger.Debug($"Mech ID: {mechDef.Description.Id}");
-                                            Logger.Debug($"Mech Weight: {mechDef.Chassis.Tonnage}");
-                                        }
-                                    }
-                                }
-                                Logger.Debug($"LegacyLance Weight: {currentLanceWeight}");*/
-                            }
-                            if (__instance.Constants.Story.StartingTargetSystem == "Alphard(MH)")
-                            {
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.periAssaultMechsPossible, RngStart.Settings.periNumberAssaultMechs));
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.periHeavyMechsPossible, RngStart.Settings.periNumberHeavyMechs));
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.periMediumMechsPossible, RngStart.Settings.periNumberMediumMechs));
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.periLightMechsPossible, RngStart.Settings.periNumberLightMechs));
-
-                                /*for (int i = 0; i < legacyLance.Count; i++)
-                                {
-                                    var mechDef = new MechDef(__instance.DataManager.MechDefs.Get(legacyLance[i]), __instance.GenerateSimGameUID());
-                                    foreach (var mechID in legacyLance)
-                                    {
-                                        if (mechID == mechDef.Description.Id)
-                                        {
-                                            lance.Add(mechDef);
-
-                                            Logger.Debug($"Mech ID: {mechDef.Description.Id}");
-                                            Logger.Debug($"Mech Weight: {mechDef.Chassis.Tonnage}");
-                                        }
-                                    }
-                                }
-                                Logger.Debug($"LegacyLance Weight: {currentLanceWeight}");*/
-                            }
-                            if (__instance.Constants.Story.StartingTargetSystem == "Lothario")
-                            {
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.periAssaultMechsPossible, RngStart.Settings.periNumberAssaultMechs));
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.periHeavyMechsPossible, RngStart.Settings.periNumberHeavyMechs));
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.periMediumMechsPossible, RngStart.Settings.periNumberMediumMechs));
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.periLightMechsPossible, RngStart.Settings.periNumberLightMechs));
-
-                                /*for (int i = 0; i < legacyLance.Count; i++)
-                                {
-                                    var mechDef = new MechDef(__instance.DataManager.MechDefs.Get(legacyLance[i]), __instance.GenerateSimGameUID());
-                                    foreach (var mechID in legacyLance)
-                                    {
-                                        if (mechID == mechDef.Description.Id)
-                                        {
-                                            lance.Add(mechDef);
-
-                                            Logger.Debug($"Mech ID: {mechDef.Description.Id}");
-                                            Logger.Debug($"Mech Weight: {mechDef.Chassis.Tonnage}");
-                                        }
-                                    }
-                                }
-                                Logger.Debug($"LegacyLance Weight: {currentLanceWeight}");*/
-                            }
-                            if (__instance.Constants.Story.StartingTargetSystem == "Coromodir")
-                            {
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.periAssaultMechsPossible, RngStart.Settings.periNumberAssaultMechs));
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.periHeavyMechsPossible, RngStart.Settings.periNumberHeavyMechs));
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.periMediumMechsPossible, RngStart.Settings.periNumberMediumMechs));
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.periLightMechsPossible, RngStart.Settings.periNumberLightMechs));
-
-                                /*for (int i = 0; i < legacyLance.Count; i++)
-                                {
-                                    var mechDef = new MechDef(__instance.DataManager.MechDefs.Get(legacyLance[i]), __instance.GenerateSimGameUID());
-                                    foreach (var mechID in legacyLance)
-                                    {
-                                        if (mechID == mechDef.Description.Id)
-                                        {
-                                            lance.Add(mechDef);
-
-                                            Logger.Debug($"Mech ID: {mechDef.Description.Id}");
-                                            Logger.Debug($"Mech Weight: {mechDef.Chassis.Tonnage}");
-                                        }
-                                    }
-                                }
-                                Logger.Debug($"LegacyLance Weight: {currentLanceWeight}");*/
-                            }
-                            if (__instance.Constants.Story.StartingTargetSystem == "Asturias")
-                            {
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.deepAssaultMechsPossible, RngStart.Settings.deepNumberAssaultMechs));
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.deepHeavyMechsPossible, RngStart.Settings.deepNumberHeavyMechs));
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.deepMediumMechsPossible, RngStart.Settings.deepNumberMediumMechs));
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.deepLightMechsPossible, RngStart.Settings.deepNumberLightMechs));
-
-                                /*for (int i = 0; i < legacyLance.Count; i++)
-                                {
-                                    var mechDef = new MechDef(__instance.DataManager.MechDefs.Get(legacyLance[i]), __instance.GenerateSimGameUID());
-                                    foreach (var mechID in legacyLance)
-                                    {
-                                        if (mechID == mechDef.Description.Id)
-                                        {
-                                            lance.Add(mechDef);
-
-                                            Logger.Debug($"Mech ID: {mechDef.Description.Id}");
-                                            Logger.Debug($"Mech Weight: {mechDef.Chassis.Tonnage}");
-                                        }
-                                    }
-                                }
-                                Logger.Debug($"LegacyLance Weight: {currentLanceWeight}");*/
-                            }
-                            if (__instance.Constants.Story.StartingTargetSystem == "FarReach")
-                            {
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.deepAssaultMechsPossible, RngStart.Settings.deepNumberAssaultMechs));
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.deepHeavyMechsPossible, RngStart.Settings.deepNumberHeavyMechs));
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.deepMediumMechsPossible, RngStart.Settings.deepNumberMediumMechs));
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.deepLightMechsPossible, RngStart.Settings.deepNumberLightMechs));
-
-                                /*for (int i = 0; i < legacyLance.Count; i++)
-                                {
-                                    var mechDef = new MechDef(__instance.DataManager.MechDefs.Get(legacyLance[i]), __instance.GenerateSimGameUID());
-                                    foreach (var mechID in legacyLance)
-                                    {
-                                        if (mechID == mechDef.Description.Id)
-                                        {
-                                            lance.Add(mechDef);
-
-                                            Logger.Debug($"Mech ID: {mechDef.Description.Id}");
-                                            Logger.Debug($"Mech Weight: {mechDef.Chassis.Tonnage}");
-                                        }
-                                    }
-                                }
-                                Logger.Debug($"LegacyLance Weight: {currentLanceWeight}");*/
-                            }
-                            if (__instance.Constants.Story.StartingTargetSystem == "Blackbone(Nyserta 3025+)")
-                            {
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.pirateAssaultMechsPossible, RngStart.Settings.pirateNumberAssaultMechs));
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.pirateHeavyMechsPossible, RngStart.Settings.pirateNumberHeavyMechs));
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.pirateMediumMechsPossible, RngStart.Settings.pirateNumberMediumMechs));
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.pirateLightMechsPossible, RngStart.Settings.pirateNumberLightMechs));
-
-                                /*for (int i = 0; i < legacyLance.Count; i++)
-                                {
-                                    var mechDef = new MechDef(__instance.DataManager.MechDefs.Get(legacyLance[i]), __instance.GenerateSimGameUID());
-                                    foreach (var mechID in legacyLance)
-                                    {
-                                        if (mechID == mechDef.Description.Id)
-                                        {
-                                            lance.Add(mechDef);
-
-                                            Logger.Debug($"Mech ID: {mechDef.Description.Id}");
-                                            Logger.Debug($"Mech Weight: {mechDef.Chassis.Tonnage}");
-                                        }
-                                    }
-                                }
-                                Logger.Debug($"LegacyLance Weight: {currentLanceWeight}");*/
-                            }
-                            if (__instance.Constants.Story.StartingTargetSystem == "Bremen(HL)")
-                            {
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.deepAssaultMechsPossible, RngStart.Settings.deepNumberAssaultMechs));
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.deepHeavyMechsPossible, RngStart.Settings.deepNumberHeavyMechs));
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.deepMediumMechsPossible, RngStart.Settings.deepNumberMediumMechs));
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.deepLightMechsPossible, RngStart.Settings.deepNumberLightMechs));
-
-                                /*for (int i = 0; i < legacyLance.Count; i++)
-                                {
-                                    var mechDef = new MechDef(__instance.DataManager.MechDefs.Get(legacyLance[i]), __instance.GenerateSimGameUID());
-                                    foreach (var mechID in legacyLance)
-                                    {
-                                        if (mechID == mechDef.Description.Id)
-                                        {
-                                            lance.Add(mechDef);
-
-                                            Logger.Debug($"Mech ID: {mechDef.Description.Id}");
-                                            Logger.Debug($"Mech Weight: {mechDef.Chassis.Tonnage}");
-                                        }
-                                    }
-                                }
-                                Logger.Debug($"LegacyLance Weight: {currentLanceWeight}");*/
-                            }
-                            if (__instance.Constants.Story.StartingTargetSystem == "Trondheim(JF)")
-                            {
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.deepAssaultMechsPossible, RngStart.Settings.deepNumberAssaultMechs));
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.deepHeavyMechsPossible, RngStart.Settings.deepNumberHeavyMechs));
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.deepMediumMechsPossible, RngStart.Settings.deepNumberMediumMechs));
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.deepLightMechsPossible, RngStart.Settings.deepNumberLightMechs));
-
-                                /*for (int i = 0; i < legacyLance.Count; i++)
-                                {
-                                    var mechDef = new MechDef(__instance.DataManager.MechDefs.Get(legacyLance[i]), __instance.GenerateSimGameUID());
-                                    foreach (var mechID in legacyLance)
-                                    {
-                                        if (mechID == mechDef.Description.Id)
-                                        {
-                                            lance.Add(mechDef);
-
-                                            Logger.Debug($"Mech ID: {mechDef.Description.Id}");
-                                            Logger.Debug($"Mech Weight: {mechDef.Chassis.Tonnage}");
-                                        }
-                                    }
-                                }
-                                Logger.Debug($"LegacyLance Weight: {currentLanceWeight}");*/
-                            }
-                            if (__instance.Constants.Story.StartingTargetSystem == "TortugaPrime")
-                            {
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.pirateAssaultMechsPossible, RngStart.Settings.pirateNumberAssaultMechs));
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.pirateHeavyMechsPossible, RngStart.Settings.pirateNumberHeavyMechs));
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.pirateMediumMechsPossible, RngStart.Settings.pirateNumberMediumMechs));
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.pirateLightMechsPossible, RngStart.Settings.pirateNumberLightMechs));
-
-                                /*for (int i = 0; i < legacyLance.Count; i++)
-                                {
-                                    var mechDef = new MechDef(__instance.DataManager.MechDefs.Get(legacyLance[i]), __instance.GenerateSimGameUID());
-                                    foreach (var mechID in legacyLance)
-                                    {
-                                        if (mechID == mechDef.Description.Id)
-                                        {
-                                            lance.Add(mechDef);
-
-                                            Logger.Debug($"Mech ID: {mechDef.Description.Id}");
-                                            Logger.Debug($"Mech Weight: {mechDef.Chassis.Tonnage}");
-                                        }
-                                    }
-                                }
-                                Logger.Debug($"LegacyLance Weight: {currentLanceWeight}");*/
-                            }
-                            if (__instance.Constants.Story.StartingTargetSystem == "Gotterdammerung")
-                            {
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.pirateAssaultMechsPossible, RngStart.Settings.pirateNumberAssaultMechs));
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.pirateHeavyMechsPossible, RngStart.Settings.pirateNumberHeavyMechs));
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.pirateMediumMechsPossible, RngStart.Settings.pirateNumberMediumMechs));
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.pirateLightMechsPossible, RngStart.Settings.pirateNumberLightMechs));
-
-                                /*for (int i = 0; i < legacyLance.Count; i++)
-                                {
-                                    var mechDef = new MechDef(__instance.DataManager.MechDefs.Get(legacyLance[i]), __instance.GenerateSimGameUID());
-                                    foreach (var mechID in legacyLance)
-                                    {
-                                        if (mechID == mechDef.Description.Id)
-                                        {
-                                            lance.Add(mechDef);
-
-                                            Logger.Debug($"Mech ID: {mechDef.Description.Id}");
-                                            Logger.Debug($"Mech Weight: {mechDef.Chassis.Tonnage}");
-                                        }
-                                    }
-                                }
-                                Logger.Debug($"LegacyLance Weight: {currentLanceWeight}");*/
-                            }
-                            if (__instance.Constants.Story.StartingTargetSystem == "Thala")
-                            {
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.deepAssaultMechsPossible, RngStart.Settings.deepNumberAssaultMechs));
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.deepHeavyMechsPossible, RngStart.Settings.deepNumberHeavyMechs));
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.deepMediumMechsPossible, RngStart.Settings.deepNumberMediumMechs));
-                                legacyLance.AddRange(GetRandomSubList(RngStart.Settings.deepLightMechsPossible, RngStart.Settings.deepNumberLightMechs));
-
-                                /*for (int i = 0; i < legacyLance.Count; i++)
-                                {
-                                    var mechDef = new MechDef(__instance.DataManager.MechDefs.Get(legacyLance[i]), __instance.GenerateSimGameUID());
-                                    foreach (var mechID in legacyLance)
-                                    {
-                                        if (mechID == mechDef.Description.Id)
-                                        {
-                                            lance.Add(mechDef);
-
-                                            Logger.Debug($"Mech ID: {mechDef.Description.Id}");
-                                            Logger.Debug($"Mech Weight: {mechDef.Chassis.Tonnage}");
-                                        }
-                                    }
-                                }
-                                Logger.Debug($"LegacyLance Weight: {currentLanceWeight}");*/
-                            }
+                            
 
                             // check to see if we're on the last mechbay and if we have more mechs to add
                             // if so, store the mech at index 5 before next iteration.
@@ -838,6 +288,7 @@ namespace RandomCampaignStart
                             else
                             {
                                 Logger.Debug($"Illegal Lance");
+                                Logger.Debug($"Weight: {currentLanceWeight}");
                             }
                         }
 
@@ -924,334 +375,6 @@ namespace RandomCampaignStart
 
                                 Logger.Debug($"Blacklisted! {mechDef.Name}");
                             }
-
-                            //Logger.Debug($"TestMech {mechDef.Name}");
-                            if (__instance.Constants.Story.StartingTargetSystem == "UrCruinne")
-                            {
-                                foreach (var mechID in RngStart.Settings.vanExcludedMechs)
-                                {
-                                    if (mechID == mechDef.Description.Id)
-                                    {
-                                        excluded = true;
-
-                                        Logger.Debug($"Start Planet-Gal {__instance.Constants.Story.StartingTargetSystem}");
-                                        Logger.Debug($"Gal-Excluded! {mechDef.Description.Id}");
-                                    }
-                                }
-                                Logger.Debug($"Leaving Gal-Start Loop!");
-                            }
-                            if (__instance.Constants.Story.StartingTargetSystem == "Galatea")
-                            {
-                                foreach (var mechID in RngStart.Settings.innerExcludedMechs)
-                                {
-                                    if (mechID == mechDef.Description.Id)
-                                    {
-                                        excluded = true;
-
-                                        Logger.Debug($"Start Planet-Ur {__instance.Constants.Story.StartingTargetSystem}");
-                                        Logger.Debug($"Ur-Excluded! {mechDef.Description.Id}");
-                                    }
-                                }
-                                Logger.Debug($"Leaving Ur-Start Loop!");
-                            }
-                            if (__instance.Constants.Story.StartingTargetSystem == "Tharkad")
-                            {
-                                foreach (var mechID in RngStart.Settings.innerExcludedMechs)
-                                {
-                                    if (mechID == mechDef.Description.Id)
-                                    {
-                                        excluded = true;
-
-                                        //Logger.Debug($"Excluded! {mechDef.Name}");
-                                    }
-                                }
-                            }
-                            if (__instance.Constants.Story.StartingTargetSystem == "NewAvalon")
-                            {
-                                foreach (var mechID in RngStart.Settings.innerExcludedMechs)
-                                {
-                                    if (mechID == mechDef.Description.Id)
-                                    {
-                                        excluded = true;
-
-                                        //Logger.Debug($"Excluded! {mechDef.Name}");
-                                    }
-                                }
-                            }
-                            if (__instance.Constants.Story.StartingTargetSystem == "Luthien")
-                            {
-                                foreach (var mechID in RngStart.Settings.innerExcludedMechs)
-                                {
-                                    if (mechID == mechDef.Description.Id)
-                                    {
-                                        excluded = true;
-
-                                        //Logger.Debug($"Excluded! {mechDef.Name}");
-                                    }
-                                }
-                            }
-                            if (__instance.Constants.Story.StartingTargetSystem == "Atreus(FWL)")
-                            {
-                                foreach (var mechID in RngStart.Settings.innerExcludedMechs)
-                                {
-                                    if (mechID == mechDef.Description.Id)
-                                    {
-                                        excluded = true;
-
-                                        //Logger.Debug($"Excluded! {mechDef.Name}");
-                                    }
-                                }
-                            }
-                            if (__instance.Constants.Story.StartingTargetSystem == "Sian")
-                            {
-                                foreach (var mechID in RngStart.Settings.innerExcludedMechs)
-                                {
-                                    if (mechID == mechDef.Description.Id)
-                                    {
-                                        excluded = true;
-
-                                        //Logger.Debug($"Excluded! {mechDef.Name}");
-                                    }
-                                }
-                            }
-                            if (__instance.Constants.Story.StartingTargetSystem == "Rasalhague")
-                            {
-                                foreach (var mechID in RngStart.Settings.innerExcludedMechs)
-                                {
-                                    if (mechID == mechDef.Description.Id)
-                                    {
-                                        excluded = true;
-
-                                        //Logger.Debug($"Excluded! {mechDef.Name}");
-                                    }
-                                }
-                            }
-                            if (__instance.Constants.Story.StartingTargetSystem == "StranaMechty")
-                            {
-                                foreach (var mechID in RngStart.Settings.clanExcludedMechs)
-                                {
-                                    if (mechID == mechDef.Description.Id)
-                                    {
-                                        excluded = true;
-
-                                        //Logger.Debug($"Excluded! {mechDef.Name}");
-                                    }
-                                }
-                            }
-                            if (__instance.Constants.Story.StartingTargetSystem == "St.Ives")
-                            {
-                                foreach (var mechID in RngStart.Settings.innerExcludedMechs)
-                                {
-                                    if (mechID == mechDef.Description.Id)
-                                    {
-                                        excluded = true;
-
-                                        //Logger.Debug($"Excluded! {mechDef.Name}");
-                                    }
-                                }
-                            }
-                            if (__instance.Constants.Story.StartingTargetSystem == "Oberon")
-                            {
-                                foreach (var mechID in RngStart.Settings.pirateExcludedMechs)
-                                {
-                                    if (mechID == mechDef.Description.Id)
-                                    {
-                                        excluded = true;
-
-                                        //Logger.Debug($"Excluded! {mechDef.Name}");
-                                    }
-                                }
-                            }
-                            if (__instance.Constants.Story.StartingTargetSystem == "Taurus")
-                            {
-                                foreach (var mechID in RngStart.Settings.periExcludedMechs)
-                                {
-                                    if (mechID == mechDef.Description.Id)
-                                    {
-                                        excluded = true;
-
-                                        //Logger.Debug($"Excluded! {mechDef.Name}");
-                                    }
-                                }
-                            }
-                            if (__instance.Constants.Story.StartingTargetSystem == "Canopus")
-                            {
-                                foreach (var mechID in RngStart.Settings.periExcludedMechs)
-                                {
-                                    if (mechID == mechDef.Description.Id)
-                                    {
-                                        excluded = true;
-
-                                        //Logger.Debug($"Excluded! {mechDef.Name}");
-                                    }
-                                }
-                            }
-                            if (__instance.Constants.Story.StartingTargetSystem == "Alpheratz")
-                            {
-                                foreach (var mechID in RngStart.Settings.periExcludedMechs)
-                                {
-                                    if (mechID == mechDef.Description.Id)
-                                    {
-                                        excluded = true;
-
-                                        //Logger.Debug($"Excluded! {mechDef.Name}");
-                                    }
-                                }
-                            }
-                            if (__instance.Constants.Story.StartingTargetSystem == "Circinus")
-                            {
-                                foreach (var mechID in RngStart.Settings.pirateExcludedMechs)
-                                {
-                                    if (mechID == mechDef.Description.Id)
-                                    {
-                                        excluded = true;
-
-                                        //Logger.Debug($"Excluded! {mechDef.Name}");
-                                    }
-                                }
-                            }
-                            if (__instance.Constants.Story.StartingTargetSystem == "Alphard(MH)")
-                            {
-                                foreach (var mechID in RngStart.Settings.periExcludedMechs)
-                                {
-                                    if (mechID == mechDef.Description.Id)
-                                    {
-                                        excluded = true;
-
-                                        //Logger.Debug($"Excluded! {mechDef.Name}");
-                                    }
-                                }
-                            }
-                            if (__instance.Constants.Story.StartingTargetSystem == "Lothario")
-                            {
-                                foreach (var mechID in RngStart.Settings.periExcludedMechs)
-                                {
-                                    if (mechID == mechDef.Description.Id)
-                                    {
-                                        excluded = true;
-
-                                        //Logger.Debug($"Excluded! {mechDef.Name}");
-                                    }
-                                }
-                            }
-                            if (__instance.Constants.Story.StartingTargetSystem == "Coromodir")
-                            {
-                                foreach (var mechID in RngStart.Settings.periExcludedMechs)
-                                {
-                                    if (mechID == mechDef.Description.Id)
-                                    {
-                                        excluded = true;
-
-                                        //Logger.Debug($"Excluded! {mechDef.Name}");
-                                    }
-                                }
-                            }
-                            if (__instance.Constants.Story.StartingTargetSystem == "Asturias")
-                            {
-                                foreach (var mechID in RngStart.Settings.deepExcludedMechs)
-                                {
-                                    if (mechID == mechDef.Description.Id)
-                                    {
-                                        excluded = true;
-
-                                        //Logger.Debug($"Excluded! {mechDef.Name}");
-                                    }
-                                }
-                            }
-                            if (__instance.Constants.Story.StartingTargetSystem == "FarReach")
-                            {
-                                foreach (var mechID in RngStart.Settings.deepExcludedMechs)
-                                {
-                                    if (mechID == mechDef.Description.Id)
-                                    {
-                                        excluded = true;
-
-                                        //Logger.Debug($"Excluded! {mechDef.Name}");
-                                    }
-                                }
-                            }
-                            if (__instance.Constants.Story.StartingTargetSystem == "Blackbone(Nyserta 3025+)")
-                            {
-                                foreach (var mechID in RngStart.Settings.pirateExcludedMechs)
-                                {
-                                    if (mechID == mechDef.Description.Id)
-                                    {
-                                        excluded = true;
-
-                                        //Logger.Debug($"Excluded! {mechDef.Name}");
-                                    }
-                                }
-                            }
-                            if (__instance.Constants.Story.StartingTargetSystem == "Bremen(HL)")
-                            {
-                                foreach (var mechID in RngStart.Settings.deepExcludedMechs)
-                                {
-                                    if (mechID == mechDef.Description.Id)
-                                    {
-                                        excluded = true;
-
-                                        //Logger.Debug($"Excluded! {mechDef.Name}");
-                                    }
-                                }
-                            }
-                            if (__instance.Constants.Story.StartingTargetSystem == "Trondheim(JF)")
-                            {
-                                foreach (var mechID in RngStart.Settings.deepExcludedMechs)
-                                {
-                                    if (mechID == mechDef.Description.Id)
-                                    {
-                                        excluded = true;
-
-                                        //Logger.Debug($"Excluded! {mechDef.Name}");
-                                    }
-                                }
-                            }
-                            if (__instance.Constants.Story.StartingTargetSystem == "TortugaPrime")
-                            {
-                                foreach (var mechID in RngStart.Settings.pirateExcludedMechs)
-                                {
-                                    if (mechID == mechDef.Description.Id)
-                                    {
-                                        excluded = true;
-
-                                        //Logger.Debug($"Excluded! {mechDef.Name}");
-                                    }
-                                }
-                            }
-                            if (__instance.Constants.Story.StartingTargetSystem == "Gotterdammerung")
-                            {
-                                foreach (var mechID in RngStart.Settings.pirateExcludedMechs)
-                                {
-                                    if (mechID == mechDef.Description.Id)
-                                    {
-                                        excluded = true;
-
-                                        //Logger.Debug($"Excluded! {mechDef.Name}");
-                                    }
-                                }
-                            }
-                            if (__instance.Constants.Story.StartingTargetSystem == "Thala")
-                            {
-                                foreach (var mechID in RngStart.Settings.deepExcludedMechs)
-                                {
-                                    if (mechID == mechDef.Description.Id)
-                                    {
-                                        excluded = true;
-
-                                        //Logger.Debug($"Excluded! {mechDef.Name}");
-                                    }
-                                }
-                            }
-                            /*foreach (var mechID in RngStart.Settings.ExcludedMechs)
-                            {
-                                if (mechID == mechDef.Description.Id)
-                                {
-                                    excluded = true;
-
-                                    //Logger.Debug($"Excluded! {mechDef.Name}");
-                                }
-                            }*/
-
 
                             if (!RngStart.Settings.AllowDuplicateChassis)
                             {
@@ -1344,46 +467,6 @@ namespace RandomCampaignStart
                                 lance.Remove(heaviest);
                                 currentLanceWeight -= heaviest.Chassis.Tonnage;
                             }
-
-                            /*if (currentLanceWeight > RngStart.Settings.MaximumStartingWeight || firstTargetRun)
-                            {
-                                //Logger.Debug($"Clearing invalid lance");
-                                Logger.Debug($"Lance Count-1: {lance.Count}");
-                                lance.Remove(mechDef);
-                                Logger.Debug($"Lance Count-2: {lance.Count}");
-                                dupe = false;
-                                blacklisted = false;
-                                excluded = false;
-                                firstTargetRun = false;
-                                if (RemoveAncestralMech == true)
-                                {
-                                    baySlot = 0;
-                                    currentLanceWeight = 0;
-                                    maxLanceSize = RngStart.Settings.MaximumLanceSize;
-                                    if (AncestralMechDef.Description.Id == "mechdef_centurion_TARGETDUMMY" && RngStart.Settings.IgnoreAncestralMech == true)
-                                    {
-                                        maxLanceSize = RngStart.Settings.MaximumLanceSize + 1;
-                                        TargetDummy = true;
-                                    }
-                                }
-                                else if (!RemoveAncestralMech && RngStart.Settings.IgnoreAncestralMech)
-                                {
-                                    maxLanceSize = RngStart.Settings.MaximumLanceSize + 1;
-                                    currentLanceWeight = 0;
-                                    lance.Add(AncestralMechDef);
-                                    baySlot = 1;
-                                }
-                                else
-                                {
-                                    maxLanceSize = RngStart.Settings.MaximumLanceSize;
-                                    currentLanceWeight = AncestralMechDef.Chassis.Tonnage;
-                                    lance.Add(AncestralMechDef);
-                                    baySlot = 1;
-                                }
-                                continue;
-                            }*/
-
-                            //Logger.Debug($"Done a loop");
                         }
                         Logger.Debug($"New mode");
                         Logger.Debug($"Starting lance instantiation");

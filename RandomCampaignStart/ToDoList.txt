@@ -1,0 +1,11 @@
+Pilots
+-Add Random Pilots
+-Integrate Pilot Mods
+-Reorganize Pilot Quirk System
+-Add Pilot-Mech Preference
+
+Start Additions
+-Faction Reputation Variance
+-Pilot XP Variance
+-CBill Variance
+-Randomize Company Name

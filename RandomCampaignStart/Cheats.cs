@@ -47,8 +47,14 @@ namespace RandomCampaignStart
 
                 if (Cheats.cSettings.cheatPilots)
                 {
-                    simulation.Commander.AddExperience(0, "Cheat XP", Cheats.cSettings.iCheatXP);
-                    Logger.Debug($"XP Added: {Cheats.cSettings.iCheatXP}");
+                    Logger.Debug($"Number of Pilots: {simulation.PilotRoster.Count}");
+                    foreach (var pilot in simulation.PilotRoster)
+                    {
+                        Logger.Debug($"Pilot: {pilot.Name}");
+                        pilot.AddExperience(0, "Cheat XP", Cheats.cSettings.iCheatXP);
+                        Logger.Debug($"XP Added: {Cheats.cSettings.iCheatXP}");
+                    }
+                    simulation.Constants.Story.CommanderStartingExperience += Cheats.cSettings.iCheatXP;
                 }
 
                 if (Cheats.cSettings.cheatMoney)
@@ -101,34 +107,23 @@ namespace RandomCampaignStart
                 if (Cheats.cSettings.cheatRep)
                 {
                     Random RNG = new Random();
-                    int randVal = RNG.Next(0, Cheats.cSettings.iRepVal);
-
-                    Logger.Debug($"Number of Factions: {simulation.DataManager.Factions.Count}");
-                    foreach (KeyValuePair<Faction, FactionDef> pair in simulation.FactionsDict)
-                    {
-                        Logger.Debug($"{pair} Faction");
-                        Logger.Debug($"Get Reputation Before: {simulation.GetReputation(pair.Key)}");
-                        Logger.Debug($"Value: {randVal}");
-                        try
-                        {
-                            AccessTools.Method(typeof(SimGameState), "SetReputation").Invoke(simulation, new object[] { pair.Key, randVal, StatCollection.StatOperation.Set, null });
-                        }
-                        catch (Exception e)
-                        {
-                            Logger.LogError(e);
-                        }
-
-                        Logger.Debug($"Get Reputation After: {simulation.GetReputation(pair.Key)}");
-                    }
-
+                    
                     if (Cheats.cSettings.cheatLocalRep)
                     {
-                        
+                        foreach (KeyValuePair<Faction, FactionDef> pair in simulation.FactionsDict)
+                        {
+                            int randVal = RNG.Next(Cheats.cSettings.iMinRepVal, Cheats.cSettings.iMaxRepVal);
+                            AccessTools.Method(typeof(SimGameState), "SetReputation").Invoke(simulation, new object[] { pair.Key, randVal, StatCollection.StatOperation.Set, null });
+                        }
                     }
 
                     if (Cheats.cSettings.cheatAllRep)
                     {
-
+                        foreach (KeyValuePair<Faction, FactionDef> pair in simulation.FactionsDict)
+                        {
+                            int iVal = Cheats.cSettings.iAllRepVal;
+                            AccessTools.Method(typeof(SimGameState), "SetReputation").Invoke(simulation, new object[] { pair.Key, iVal, StatCollection.StatOperation.Int_Add, null });
+                        }
                     }
                 }
             }
@@ -156,7 +151,9 @@ namespace RandomCampaignStart
         public List<string> cheatAddMechs = new List<string>();
         public int iCheatXP = 0;
         public int iCheatMoney = 0;
-        public int iRepVal = 20;
+        public int iMinRepVal = 15;
+        public int iMaxRepVal = 50;
+        public int iAllRepVal = 20;
 
     }
 }

@@ -12,11 +12,11 @@
 
   "Settings": {
     /* GLOBAL TOGGLES*/
-    /*FullRandomMode: true for complete randomization, false for Legacy Method Randomization.*/
-    "FullRandomMode": false, //If TagRandomLance set to true this toggle changes nothing.
+    /*NotRandomMode: true allows you to select your exact starting lance, false for Legacy Method Randomization.*/
+    "NotRandomMode": false, //If TagRandomLance set to true this toggle changes nothing.
 
     /*TagRandomLance: true to have Starting Lance consist of local Mech variants; false to allow one of the other methods: FullRandom or LegacyRandom*/
-    "TagRandomLance": true,
+    "TagRandomLance": false,
 
     /* Global toggles that effect all types of randomizers.*/
     "MinimumStartingWeight": 160,
@@ -25,6 +25,9 @@
     "NumberProceduralPilots": 0,
     "MechPercentageStartingCost": 1,
     "IgnoreAncestralMech": false,
+
+    /* Settings for Original Method. Use this method to input specific mechs to be randomized amongst. Also, this allows precise control of mech weight classes. */
+    "RemoveAncestralMech": false,
 
     /* Specify which Ronin you want to have in your game to start. NumberRoninFromList will specify how many Ronin will be randomly selected from amongst this list. */
     "NumberRoninFromList": 4,
@@ -41,6 +44,11 @@
     "MaximumMechWeight": 45,
     "AllowDuplicateChassis": false,
     "AllowCustomMechs": false,
+
+    /* startingLance refers to a Lance that you set yourself that ignores the Random variables and weight/size limitations. */
+    "startingLance": [
+
+    ],
 
     /* Use mechtags for this list.  Example: "clanwolf" will include Mechs that are commonly used by Clan Wolf(or are tagged to represent that) */
     /* TagLanceRandom variables used for configuration  */
@@ -212,10 +220,16 @@
       ]
     ],
 
-    /* Use mechdef name for this list. For example, "mechdef_locust_LCT-1M" to exclude the Locust-1M. */
     "startTypes": [
+      "InnerSphere",
+      "Periphery",
+      "DeepPeriphery",
+      "Clan",
+      "Pirates"
+    ],
+
+    "startTypeOptions": [
       [ //Inner Sphere
-        "Galatea",
         "Tharkad",
         "NewAvalon",
         "Luthien",
@@ -230,7 +244,9 @@
         "Alpheratz",
         "Alphard(MH)",
         "Lothario",
-        "Coromodir"
+        "Coromodir",
+        "Galatea",
+        "UrCruinne"
       ],
       [ //Deep Periphery
         "Asturias",
@@ -251,80 +267,28 @@
       ]
     ],
 
-    "vanExcludedMechs": [
-
-    ],
-
-    "pirateExcludedMechs": [
-
-    ],
-    "innerExcludedMechs": [
-
-    ],
-
-    "periExcludedMechs": [
-
-    ],
-    "deepExcludedMechs": [
-
-    ],
-
-    "clanExcludedMechs": [
-
-    ],
-
-    /* Settings for Original Method. Use this method to input specific mechs to be randomized amongst. Also, this allows precise control of mech weight classes. */
-    "RemoveAncestralMech": false,
-
-    /* Vanilla Lance Options */
-    "NumberAssaultMechs": 1,
-    "NumberHeavyMechs": 1,
-    "NumberLightMechs": 1,
-    "NumberMediumMechs": 1,
-
-    "LightMechsPossible": [
-
-    ],
-    "MediumMechsPossible": [
-
-    ],
-    "HeavyMechsPossible": [
-
-    ],
-    "AssaultMechsPossible": [
-
-    ],
-
-    /* Pirate Lance Options */
-    "pirateNumberAssaultMechs": 1,
-    "pirateNumberHeavyMechs": 1,
-    "pirateNumberLightMechs": 1,
-    "pirateNumberMediumMechs": 1,
-
-    "pirateLightMechsPossible": [
-
-    ],
-    "pirateMediumMechsPossible": [
-
-    ],
-    "pirateHeavyMechsPossible": [
-
-    ],
-    "pirateAssaultMechsPossible": [
-
-    ],
-
     /* Inner Sphere Lance Options */
-    "innerNumberAssaultMechs": 1,
-    "innerNumberHeavyMechs": 1,
-    "innerNumberLightMechs": 1,
+    "innerNumberAssaultMechs": 0,
+    "innerNumberHeavyMechs": 0,
     "innerNumberMediumMechs": 1,
+    "innerNumberLightMechs": 3,
 
     "innerLightMechsPossible": [
-
+      "mechdef_battlemaster_BLR-1CX",
+      "mechdef_battlemaster_BLR-4L",
+      "mechdef_spider_SDR-6V",
+      "mechdef_spider_SDR-AS",
+      "mechdef_urbanmech_UM-R60LL",
+      "mechdef_urbanmech_UM-R66",
+      "mechdef_venom_SDR-8C",
+      "mechdef_venom_SDR-8K",
+      "mechdef_venom_SDR-9K"
     ],
     "innerMediumMechsPossible": [
-
+      "mechdef_trebuchet_TBT-6X",
+      "mechdef_vindicator_VND-6L",
+      "mechdef_wolverine_WVR-DS",
+      "mechdef_wolverine_WVR-X"
     ],
     "innerHeavyMechsPossible": [
 
@@ -334,16 +298,24 @@
     ],
 
     /* Periphery Lance Options */
-    "periNumberAssaultMechs": 1,
-    "periNumberHeavyMechs": 1,
-    "periNumberLightMechs": 1,
+    "periNumberAssaultMechs": 0,
+    "periNumberHeavyMechs": 0,
     "periNumberMediumMechs": 1,
+    "periNumberLightMechs": 3,
 
     "periLightMechsPossible": [
-
+      "mechdef_battlemaster_BLR-4L",
+      "mechdef_spider_SDR-I1",
+      "mechdef_urbanmech_UM-R63",
+      "mechdef_urbanmech_UM-R63LL",
+      "mechdef_venom_SDR-8C",
+      "mechdef_venom_SDR-8K",
+      "mechdef_venom_SDR-9K"
     ],
     "periMediumMechsPossible": [
-
+      "mechdef_trebuchet_TBT-8K",
+      "mechdef_vindicator_VND-3L",
+      "mechdef_wolverine_WVR-7K"
     ],
     "periHeavyMechsPossible": [
 
@@ -353,16 +325,23 @@
     ],
 
     /* Deep Periphery Lance Options */
-    "deepNumberAssaultMechs": 1,
-    "deepNumberHeavyMechs": 1,
-    "deepNumberLightMechs": 1,
+    "deepNumberAssaultMechs": 0,
+    "deepNumberHeavyMechs": 0,
     "deepNumberMediumMechs": 1,
+    "deepNumberLightMechs": 3,
 
     "deepLightMechsPossible": [
-
+      "mechdef_spider_SDR-I1",
+      "mechdef_urbanmech_UM-R63",
+      "mechdef_urbanmech_UM-R63LL",
+      "mechdef_venom_SDR-8C",
+      "mechdef_venom_SDR-8K",
+      "mechdef_venom_SDR-9K"
     ],
     "deepMediumMechsPossible": [
-
+      "mechdef_trebuchet_TBT-4M",
+      "mechdef_vindicator_VND-3L",
+      "mechdef_wolverine_WVR-7K"
     ],
     "deepHeavyMechsPossible": [
 
@@ -372,21 +351,66 @@
     ],
 
     /* Clan Lance Options */
-    "clanNumberAssaultMechs": 1,
-    "clanNumberHeavyMechs": 1,
-    "clanNumberLightMechs": 1,
-    "clanNumberMediumMechs": 1,
+    "clanNumberAssaultMechs": 0,
+    "clanNumberHeavyMechs": 0,
+    "clanNumberMediumMechs": 0,
+    "clanNumberLightMechs": 4,
 
     "clanLightMechsPossible": [
-
+      "mechdef_commando_COM-IIC",
+      "mechdef_firestarter_FS-IIC",
+      "mechdef_jenner_JR7-IIC",
+      "mechdef_jenner_JR7-IIC-3",
+      "mechdef_locust_LCT-IIC3",
+      "mechdef_urbanmech_UM-IIC"
     ],
     "clanMediumMechsPossible": [
-
+      "mechdef_griffin_GRF-IIC",
+      "mechdef_hunchback_HBK-IIC",
+      "mechdef_kintaro_KTO-IIC",
+      "mechdef_shadowhawk_SHD-IIC",
+      "mechdef_wolverine_WVR-C"
     ],
     "clanHeavyMechsPossible": [
 
     ],
     "clanAssaultMechsPossible": [
+
+    ],
+
+    /* Pirate Lance Options */
+    "pirateNumberAssaultMechs": 0,
+    "pirateNumberHeavyMechs": 0,
+    "pirateNumberMediumMechs": 2,
+    "pirateNumberLightMechs": 1,
+
+    "pirateLightMechsPossible": [
+      "mechdef_cattlemaster-CM-3R2",
+      "mechdef_cattlemaster-CM-3R2H",
+      "mechdef_commando_COM-P",
+      "mechdef_commando_COM-1A",
+      "mechdef_firestarter_FS1-H",
+      "mechdef_jenner_JR1-R",
+      "mechdef_locust_LCT-LR-P",
+      "mechdef_locust_LCT-P",
+      "mechdef_locust_LCT-0P",
+      "mechdef_urbanmech_UM-P",
+      "mechdef_urbanmech_UM-R666",
+      "mechdef_urbanmech_UM-R10"
+    ],
+    "pirateMediumMechsPossible": [
+      "mechdef_blackjack_BJ-P",
+      "mechdef_blackjack_BJ-0",
+      "mechdef_centurion_CN9-P",
+      "mechdef_hunchback_HBK-1G",
+      "mechdef_shadowhawk_SHD-1R",
+      "mechdef_vindicator_VND-P",
+      "mechdef_wolverine_WVR-1R"
+    ],
+    "pirateHeavyMechsPossible": [
+
+    ],
+    "pirateAssaultMechsPossible": [
 
     ],
 
