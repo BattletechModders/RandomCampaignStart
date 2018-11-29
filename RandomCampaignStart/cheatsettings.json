@@ -1,0 +1,56 @@
+﻿{
+  /* CHEAT TOGGLES  */
+  "cheatStart": true,
+  "cheatArgo": true,
+  "cheatPilots": true,
+  "cheatMoney": true,
+  "cheatLance": true,
+  "cheatRep": true,
+  "cheatLocalRep": true,
+  "cheatAllRep": true,
+
+  /* CHEAT VALUES */
+  "cheatArgoUpgrades": [
+    "argoUpgrade_drive1",
+    "argoUpgrade_drive2",
+    "argoUpgrade_mechBay2",
+    "argoUpgrade_mechBay3",
+    "argoUpgrade_mechBay_automation1",
+    "argoUpgrade_mechBay_automation2",
+    "argoUpgrade_mechBay_machineShop",
+    "argoUpgrade_mechBay_refitHarness",
+    "argoUpgrade_mechBay_scaffolding",
+    "argoUpgrade_medBay2",
+    "argoUpgrade_medBay3",
+    "argoUpgrade_medBay_hospital",
+    "argoUpgrade_pod2",
+    "argoUpgrade_pod3",
+    "argoUpgrade_power1",
+    "argoUpgrade_power2",
+    "argoUpgrade_power3",
+    "argoUpgrade_rec_arcade",
+    "argoUpgrade_rec_gym",
+    "argoUpgrade_rec_hydroponics",
+    "argoUpgrade_rec_library1",
+    "argoUpgrade_rec_library2",
+    "argoUpgrade_rec_lounge1",
+    "argoUpgrade_rec_lounge2",
+    "argoUpgrade_rec_pool",
+    "argoUpgrade_structure1",
+    "argoUpgrade_structure2",
+    "argoUpgrade_trainingModule1",
+    "argoUpgrade_trainingModule2",
+    "argoUpgrade_trainingModule3"
+  ],
+  "cheatAddMechs": [
+    "mechdef_blackknight_BL-S7",
+    "mechdef_firestarter_FS7-S",
+    "mechdef_highlander_HGN-EXb",
+    "mechdef_marauder_MAD-S7",
+    "mechdef_phoenix_hawk_PXH-HK3",
+    "mechdef_annihilator",
+    "mechdef_atlas_AS-GSZ"
+  ],
+  "iCheatXP": 50000,
+  "iCheatMoney": 50000000
+}
