@@ -592,6 +592,7 @@ namespace RandomCampaignStart
                 bool bBlacklisted = false;
                 while (minLanceSize > lance.Count || currentLanceWeight < RngStart.Settings.MinimumStartingWeight)
                 {
+                    skip:
                     Logger.Debug($"Begin Mech Finder Loop");
                     
                     // build lance collection from dictionary for speed
@@ -599,17 +600,17 @@ namespace RandomCampaignStart
                     var mechString = randomMech.Key.Replace("chassisdef", "mechdef");
                     // getting chassisdefs so renaming the key to match mechdefs Id
                     //var mechDef = new MechDef(__instance.DataManager.MechDefs.Get(mechString), __instance.GenerateSimGameUID());
-                    var mechDef = new MechDef(__instance.DataManager.MechDefs.Get(mechString), __instance.GenerateSimGameUID());
 
                     foreach (var mechID in RngStart.Settings.ExcludedMechs)
                     {
-                        if (mechID == mechDef.Description.Id)
+                        if (mechID == mechString)
                         {
-                            bExcluded = true;
-
-                            Logger.Debug($"Excluded! {mechDef.Description.Id}");
+                            Logger.Debug($"Excluded! {mechString}");
+                            goto skip;
                         }
                     }
+
+                    var mechDef = new MechDef(__instance.DataManager.MechDefs.Get(mechString), __instance.GenerateSimGameUID());
 
                     if (mechDef.MechTags.Contains("BLACKLISTED"))
                     {
