@@ -15,6 +15,9 @@ namespace RandomCampaignStart
         //Excluded Mechs for all starts
         public List<string> ExcludedMechs = new List<string>();
 
+        //Excluded Tags for all starts (TagRandomLance only; "BLACKLISTED" added to this list)
+        public List<string> ExcludedTags = new List<string>();
+
         //List of Starting Systems
         public List<string> startSystemList = new List<string>();
 
