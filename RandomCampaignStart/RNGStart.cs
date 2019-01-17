@@ -500,7 +500,7 @@ namespace RandomCampaignStart
                 float tonnagechecker = 0;
                 for (int x = 0; x < lance.Count; x++)
                 {
-                    Logger.Debug($"x is {x} and lance[x] is {lance[x].Name}");
+                    Logger.Debug($"x is {x} and lance[x] is {lance[x].Description.UIName}");
                     __instance.AddMech(x, lance[x], true, true, false);
                     tonnagechecker = tonnagechecker + lance[x].Chassis.Tonnage;
                 }
@@ -544,11 +544,19 @@ namespace RandomCampaignStart
                 Logger.Debug($"Weight w/Ancestral: {currentLanceWeight}");
             }
 
-            var system = RngStart.Settings.startSystemList.IndexOf(__instance.Constants.Story.StartingTargetSystem);
+            var systemIdish = __instance.CurSystem.Def.CoreSystemID;
+            if (systemIdish.StartsWith(__instance.Constants.Travel.StarSystemPrefix)) {
+                systemIdish = systemIdish.Substring(__instance.Constants.Travel.StarSystemPrefix.Length);
+            } else {
+                Logger.LogLine($"Starting system {systemIdish} does not start with {__instance.Constants.Travel.StarSystemPrefix}");
+            }
+
+            var system = RngStart.Settings.startSystemList.IndexOf(systemIdish);
             if (system < 0) {
-                Logger.LogLine($"Starting system not found: {__instance.Constants.Story.StartingTargetSystem} not in startSystemList; pretending it was {RngStart.Settings.startSystemList[0]} instead");
+                Logger.LogLine($"Starting system not found: {systemIdish} not in startSystemList; pretending it was {RngStart.Settings.startSystemList[0]} instead");
                 system = 0;
             }
+            Logger.Debug($"Starting system: {RngStart.Settings.startSystemList[system]}");
 
             // Put together the list of valid mechs
             var mechs = new List<MechDef>();
