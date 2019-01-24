@@ -571,6 +571,7 @@ namespace RandomCampaignStart
                 if (RngStart.Settings.MaximumMechWeight != 100) {
                     if (mech.Chassis.Tonnage > RngStart.Settings.MaximumMechWeight ||
                         mech.Chassis.Tonnage < RngStart.Settings.MinimumMechWeight) {
+                        Logger.Debug($"Bad weight {id}");
                         continue;
                     }
                 }
@@ -589,7 +590,6 @@ namespace RandomCampaignStart
                 foreach (var tag in mech.MechTags) {
                     if (RngStart.Settings.AllowedTags[system].Contains(tag)) {
                         hasTag = true;
-                        break;
                     }
                     if (RngStart.Settings.ExcludedTags.Contains(tag)) {
                         hasTag = false;
@@ -602,9 +602,11 @@ namespace RandomCampaignStart
                 }
 
                 if (mech.MechTags.Contains("BLACKLISTED")) {
-                    Logger.Debug($"Blacklisted! {mech.Name}");
+                    Logger.Debug($"Blacklisted! {id}");
                     continue;
                 }
+
+                Logger.Debug($"Accepting {id}");
 
                 mechs.Add(mech);
             }
